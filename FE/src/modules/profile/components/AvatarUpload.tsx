@@ -13,7 +13,6 @@ interface AvatarUploadProps {
 
 export const AvatarUpload = ({ currentAvatarUrl, userInitials = '??', onUploadSuccess }: AvatarUploadProps) => {
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(currentAvatarUrl);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,10 +31,8 @@ export const AvatarUpload = ({ currentAvatarUrl, userInitials = '??', onUploadSu
 
     setUploading(true);
     try {
-      const res = await profileApi.uploadAvatar(file);
-      const newUrl = (res.data as { avatarUrl: string }).avatarUrl;
-      setPreviewUrl(newUrl);
-      onUploadSuccess(newUrl);
+      const { avatarUrl } = await profileApi.uploadAvatar(file);
+      onUploadSuccess(avatarUrl);
       toast.success('Avatar updated successfully.');
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to upload avatar.'));
@@ -54,7 +51,7 @@ export const AvatarUpload = ({ currentAvatarUrl, userInitials = '??', onUploadSu
         className="group relative cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Avatar className="size-24 ring-2 ring-border transition group-hover:ring-primary">
-          <AvatarImage src={previewUrl} alt="Profile avatar" />
+          <AvatarImage src={currentAvatarUrl} alt="Profile avatar" />
           <AvatarFallback className="text-xl">{userInitials}</AvatarFallback>
         </Avatar>
 

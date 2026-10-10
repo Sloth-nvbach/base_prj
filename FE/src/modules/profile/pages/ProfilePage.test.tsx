@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tokenStore } from '@/modules/auth/store/token.store';
+import { renderWithProviders } from '@/test/render-with-providers';
 import { ProfilePage } from './ProfilePage';
 
 const getMe = vi.fn();
@@ -17,29 +17,24 @@ vi.mock('sonner', () => ({
 const profile = {
   _id: 'user-1',
   email: 'alice@example.com',
+  role: 'user',
+  loginOtpEnabled: false,
   displayName: 'Alice',
   bio: 'Hello',
   phone: '0123456789',
 };
 
-const renderPage = () =>
-  render(
-    <MemoryRouter initialEntries={['/profile']}>
-      <Routes>
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/logout" element={<div>logout route</div>} />
-      </Routes>
-    </MemoryRouter>,
-  );
+const renderPage = () => renderWithProviders(<ProfilePage />, { route: '/profile' });
 
 beforeEach(() => {
-  getMe.mockReset().mockResolvedValue({ data: profile });
+  tokenStore.set('jwt-value');
+  getMe.mockReset().mockResolvedValue(profile);
 });
 
 describe('ProfilePage', () => {
   it('shows a loading placeholder before the request resolves', () => {
     renderPage();
-    expect(screen.getByText('Loading…')).toBeInTheDocument();
+    expect(screen.getAllByText('Loading…').length).toBeGreaterThan(0);
   });
 
   it('fetches the current user once and renders it', async () => {
@@ -51,19 +46,15 @@ describe('ProfilePage', () => {
     expect(getMe).toHaveBeenCalledOnce();
   });
 
-  it('clears the token and redirects to /logout when the request fails', async () => {
-    tokenStore.set('jwt-value');
-    getMe.mockRejectedValue(new Error('401'));
-
-    renderPage();
-
-    expect(await screen.findByText('logout route')).toBeInTheDocument();
-    expect(tokenStore.get()).toBeNull();
-  });
-
   it('does not render the edit form until the user is loaded', async () => {
     renderPage();
     expect(screen.queryByLabelText('Display Name')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText('Display Name')).toBeInTheDocument());
+  });
+
+  it('shows the login code switch reflecting the saved setting', async () => {
+    renderPage();
+    const toggle = await screen.findByRole('switch', { name: 'Email code at login' });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
   });
 });

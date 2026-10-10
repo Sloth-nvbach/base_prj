@@ -1,72 +1,85 @@
-# MERN Base Project (TypeScript)
+# MERN Student Base (TypeScript)
 
-Project is split into:
+A starter for student projects: authentication, profile, image upload, and a complete example feature
+(`notes`) ready to copy. It is built to be extended with AI tools such as Google Antigravity.
 
-- `BE`: Node.js + Express + MongoDB API
-- `FE`: React + Vite frontend
+- `BE/` — Node.js + Express 5 + MongoDB (Mongoose) + Zod
+- `FE/` — React 19 + Vite + TanStack Query + shadcn/ui + Tailwind CSS 4
 
-## Clean Architecture Style
+Hướng dẫn tiếng Việt cho học sinh: **[docs/vibe-coding-guide.md](docs/vibe-coding-guide.md)**.
+Instructions for AI agents: **[AGENTS.md](AGENTS.md)**.
 
-Backend is organized by layers for easy extension:
+## Quick start
 
-- `src/config`: app/env/database setup
-- `src/models`: MongoDB models
-- `src/services`: reusable business logic (OTP, email, user workflows)
-- `src/controllers`: request/response handlers
-- `src/routes`: HTTP route definitions
-- `src/middlewares`: auth/error middlewares
-- `src/utils`: technical helpers (JWT, hash, OTP)
-
-## Implemented Features
-
-- Register
-- Register OTP verification (email ownership)
-- Login with OTP (2-step login)
-- Forgot password (email reset token)
-- Reset password
-- Get me
-- Redirect unauthenticated user to `/logout` on frontend
-
-## Run Backend
+Requires Node.js 22+ and Docker (or any MongoDB, e.g. Atlas: set `MONGO_URI` in `BE/.env`).
 
 ```bash
-cd BE
-cp .env.example .env
-npm install
-npm run dev
+npm run setup          # install dependencies, create BE/.env and FE/.env
+docker compose up -d   # start MongoDB
+npm run seed           # demo@example.com / demo1234, admin@example.com / admin1234, 12 sample students
+npm run dev            # backend http://localhost:5003, frontend http://localhost:5173
 ```
 
-## Run Frontend
+No email or Cloudinary account is needed to start:
+
+- Without `SMTP_HOST`, emails (OTP and reset codes) are printed in the backend terminal.
+- Without `CLOUDINARY_*`, image upload answers 503; everything else works.
+- Without `GEMINI_API_KEY`, the chat popup explains that it is not configured; everything else works.
+
+## Features
+
+- Register with email OTP verification, login, forgot / reset password
+- Optional email code at login, off by default, toggled per user on **Profile → Security**
+- Profile editing and avatar upload (Cloudinary)
+- Roles (`user`, `admin`) with `requireRole` on the backend and role-gated routes on the frontend
+- `notes` reference module: paginated list, search, tag filter, create / edit / delete, owner-only access, admin view of all notes
+- Admin area (`/admin`, open to every signed-in account in this base; one line on each side locks it to admins): sidebar layout, dashboard with stats, user management (search, filters, sortable
+  table, pagination, edit role / verification, delete, bulk delete) built from reusable `DataTable`, `SearchInput`,
+  `FilterSelect` and `StatCard` components
+- Sample AI chat bot on Google Gemini's free tier, as a floating button in the bottom-right corner that opens a chat popup: set `GEMINI_API_KEY` in `BE/.env`
+  (free key at https://aistudio.google.com/apikey), customize it in `BE/src/config/chatbot.ts` and `FE/src/modules/chat/chat.config.ts`
+
+## Add a feature
 
 ```bash
-cd FE
-npm install
-npm run dev
+npm run gen:module -- product            # BE model/validator/service/controller/route + FE module + tests
+npm run gen:module -- product --remove   # undo
 ```
 
-## Run Tests
+Then change the example fields (`title`, `content`, `tags`). Step-by-step instructions are in [AGENTS.md](AGENTS.md#adding-a-feature-follow-these-steps-in-order).
 
-Both packages use Vitest.
+## Scripts (repository root)
 
-```bash
-cd BE && npm test      # unit + API integration tests (in-memory MongoDB)
-cd FE && npm test      # unit + component tests (jsdom + React Testing Library)
+| Script | Description |
+|---|---|
+| `npm run setup` | Install dependencies for root, `BE` and `FE`; create `.env` files from the examples |
+| `npm run dev` | Run backend and frontend together |
+| `npm run seed` | Create demo accounts (safe to run again) |
+| `npm test` | Backend tests (Vitest + in-memory MongoDB), then frontend tests (Vitest + Testing Library) |
+| `npm run lint` | ESLint on the frontend |
+| `npm run build` | Typecheck and build both apps |
+| `npm run gen:module -- <name>` | Scaffold a feature from the `notes` module |
+
+Each app also has its own scripts (`cd BE && npm run dev`, `cd FE && npm run test:watch`, ...).
+
+## Project layout
+
+```
+AGENTS.md                  conventions for AI agents (CLAUDE.md imports it)
+.agents/workflows/         Antigravity workflows: /new-module, /check
+docs/vibe-coding-guide.md  student guide (Vietnamese)
+scripts/                   setup and module generator
+BE/src/                    config, models, validators, services, controllers, routes, middlewares, utils
+BE/tests/                  unit and integration tests
+FE/src/app/                module registry (routes + navigation)
+FE/src/modules/            one folder per feature: auth, home, notes, profile
+FE/src/shared/             http client, query client, shared components and hooks
 ```
 
-Use `npm run test:watch` while developing.
+Conventions: [BE/docs/architecture.md](BE/docs/architecture.md), [FE/docs/architecture.md](FE/docs/architecture.md).
 
-- `BE/tests/unit`: utils, validators, middlewares (no database).
-- `BE/tests/integration`: full HTTP flows through `src/app.ts` via supertest. Each
-  test file boots its own throwaway MongoDB (`mongodb-memory-server`, binary is
-  downloaded once) and collections are wiped between tests. SMTP and Cloudinary
-  are replaced by in-memory recorders, so no test sends email or uploads images.
-- `FE`: tests are colocated as `*.test.ts(x)` next to the code under test.
+## Tests and CI
 
-Every push and pull request runs both suites on GitHub Actions
-(`.github/workflows/ci.yml`), plus `npm run lint` on the frontend and a
-typecheck on each package.
-
-## API Base URL
-
-- Backend: `http://localhost:5000`
-- Frontend calls: `http://localhost:5000/api`
+Backend integration tests run the real app against an in-memory MongoDB; SMTP and Cloudinary are replaced by
+in-memory recorders. Every push and pull request runs tests, lint, typecheck and a generator smoke test on
+GitHub Actions (`.github/workflows/ci.yml`).

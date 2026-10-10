@@ -1,4 +1,4 @@
-import { UserModel } from '../../src/models/user.model';
+import { UserModel, UserRole } from '../../src/models/user.model';
 import { hashPassword } from '../../src/utils/hash';
 import { signToken } from '../../src/utils/jwt';
 
@@ -10,6 +10,8 @@ interface UserOverrides {
   isEmailVerified?: boolean;
   displayName?: string;
   avatarUrl?: string;
+  role?: UserRole;
+  loginOtpEnabled?: boolean;
 }
 
 /** Creates a persisted user; verified by default so login tests can proceed. */
@@ -20,7 +22,9 @@ export const createUser = async (overrides: UserOverrides = {}) => {
     password: await hashPassword(overrides.password ?? DEFAULT_PASSWORD),
     isEmailVerified: overrides.isEmailVerified ?? true,
     displayName: overrides.displayName,
-    avatarUrl: overrides.avatarUrl
+    avatarUrl: overrides.avatarUrl,
+    role: overrides.role,
+    loginOtpEnabled: overrides.loginOtpEnabled
   });
 };
 

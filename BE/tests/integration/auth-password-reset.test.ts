@@ -1,6 +1,5 @@
-import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { app } from '../../src/app';
+import { api } from '../helpers/api';
 import { UserModel } from '../../src/models/user.model';
 import { comparePassword } from '../../src/utils/hash';
 import { emailOutbox, lastEmailTo } from '../helpers/email-outbox';
@@ -13,7 +12,7 @@ describe('POST /api/auth/forgot-password', () => {
   it('issues a reset token and emails it', async () => {
     await createUser({ email });
 
-    const response = await request(app).post('/api/auth/forgot-password').send({ email });
+    const response = await api().post('/api/auth/forgot-password').send({ email });
 
     expect(response.status).toBe(200);
     const { resetToken, resetTokenExpiresAt } = await readSecrets(email);
@@ -23,7 +22,7 @@ describe('POST /api/auth/forgot-password', () => {
   });
 
   it('answers 200 for an unknown email and sends nothing (no user enumeration)', async () => {
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/forgot-password')
       .send({ email: 'ghost@example.com' });
 
@@ -34,7 +33,7 @@ describe('POST /api/auth/forgot-password', () => {
 
   it('never returns the reset token in the response', async () => {
     await createUser({ email });
-    const response = await request(app).post('/api/auth/forgot-password').send({ email });
+    const response = await api().post('/api/auth/forgot-password').send({ email });
     const { resetToken } = await readSecrets(email);
     expect(JSON.stringify(response.body)).not.toContain(resetToken as string);
   });
@@ -42,7 +41,7 @@ describe('POST /api/auth/forgot-password', () => {
 
 describe('POST /api/auth/reset-password', () => {
   const requestReset = async () => {
-    await request(app).post('/api/auth/forgot-password').send({ email });
+    await api().post('/api/auth/forgot-password').send({ email });
     const { resetToken } = await readSecrets(email);
     return resetToken as string;
   };
@@ -51,7 +50,7 @@ describe('POST /api/auth/reset-password', () => {
     await createUser({ email });
     const token = await requestReset();
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/reset-password')
       .send({ email, token, newPassword });
 
@@ -67,19 +66,20 @@ describe('POST /api/auth/reset-password', () => {
   it('lets the user log in with the new password afterwards', async () => {
     await createUser({ email });
     const token = await requestReset();
-    await request(app).post('/api/auth/reset-password').send({ email, token, newPassword });
+    await api().post('/api/auth/reset-password').send({ email, token, newPassword });
 
-    const login = await request(app).post('/api/auth/login').send({ email, password: newPassword });
+    const login = await api().post('/api/auth/login').send({ email, password: newPassword });
 
-    expect(login.status).toBe(202);
+    expect(login.status).toBe(200);
+    expect(login.body.token).toEqual(expect.any(String));
   });
 
   it('cannot reuse a reset token', async () => {
     await createUser({ email });
     const token = await requestReset();
-    await request(app).post('/api/auth/reset-password').send({ email, token, newPassword });
+    await api().post('/api/auth/reset-password').send({ email, token, newPassword });
 
-    const replay = await request(app)
+    const replay = await api()
       .post('/api/auth/reset-password')
       .send({ email, token, newPassword: 'AnotherPass1' });
 
@@ -92,7 +92,7 @@ describe('POST /api/auth/reset-password', () => {
     const token = await requestReset();
     const wrongToken = token === '000000' ? '111111' : '000000';
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/reset-password')
       .send({ email, token: wrongToken, newPassword });
 
@@ -107,7 +107,7 @@ describe('POST /api/auth/reset-password', () => {
     const token = await requestReset();
     await UserModel.updateOne({ email }, { resetTokenExpiresAt: new Date(Date.now() - 1000) });
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/reset-password')
       .send({ email, token, newPassword });
 
@@ -118,7 +118,7 @@ describe('POST /api/auth/reset-password', () => {
     await createUser({ email });
     const token = await requestReset();
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/reset-password')
       .send({ email, token, newPassword: '123' });
 

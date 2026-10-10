@@ -1,17 +1,18 @@
 # Backend Architecture & Conventions
 
-> Instruction doc for AI agents and developers. Read this before adding or changing backend code. Follow these patterns exactly — do not introduce new architectural styles without reason.
+> Instruction doc for AI agents and developers. Read this before adding or changing backend code. Follow these patterns exactly — do not introduce new architectural styles without reason. The reference feature is `notes` (`*/note.*`). This is a base project for students: keep code simple, reuse the helpers below, and update this file when a convention changes.
 
 ## Stack
 
 - **Runtime**: Node.js + Express 5
 - **Language**: TypeScript (strict mode, CommonJS output)
 - **Database**: MongoDB via Mongoose 9
-- **Auth**: JWT (Bearer token) + email OTP (2-step)
-- **Validation**: Zod 4
-- **Media**: Cloudinary (avatar upload via Multer memory storage)
-- **Email**: Nodemailer (SMTP)
-- **Dev**: `tsx watch` · **Build**: `tsc` → `build/` · **Start**: `node build/server.js`
+- **Auth**: JWT (Bearer token); optional email OTP at login, per user (`loginOtpEnabled`)
+- **Validation**: Zod 4 (requests and environment)
+- **Media**: Cloudinary (images via Multer memory storage), optional
+- **Email**: Nodemailer (SMTP), printed to the console when SMTP is not configured
+- **Security**: helmet, CORS locked to `CLIENT_URL`, rate limits · **Logging**: morgan
+- **Dev**: `tsx watch` · **Build**: `tsc` → `build/` · **Start**: `node build/server.js` · **Test**: Vitest + supertest + mongodb-memory-server
 
 ## Layered (Clean) Architecture
 
@@ -19,164 +20,168 @@ Request flows strictly top-to-bottom. Never skip a layer or call upward.
 
 ```
 HTTP request
-  → routes/         define endpoints, attach middlewares
-  → middlewares/    authGuard → validateBody → (multer for files)
-  → controllers/    read req, call service/model, shape res — NO business logic reuse here
-  → services/       reusable business logic + side effects (email, cloudinary, otp)
-  → models/         Mongoose schemas + documents
+  → routes/         endpoints + middleware chain
+  → middlewares/    authGuard → requireRole → validate → (imageUpload)
+  → controllers/    read req, call service, shape res
+  → services/       queries, ownership rules, side effects (email, cloudinary)
+  → models/         Mongoose schemas
   → config/         env, db, cloudinary clients
-  → utils/          pure technical helpers (jwt, hash, otp)
+  → utils/          app-error, pagination, jwt, hash, otp
 ```
-
-### Layer responsibilities
 
 | Layer | Owns | Must NOT |
 |-------|------|----------|
 | `routes/` | URL + verb + middleware chain | contain logic |
-| `controllers/` | req/res handling, status codes, response shape | be reused by other controllers |
-| `services/` | multi-step workflows, side effects, cross-model logic | touch `req`/`res` |
-| `models/` | schema, field types, DB-level constraints | contain HTTP concerns |
+| `controllers/` | req/res handling, status codes | contain queries beyond one trivial call; be reused |
+| `services/` | queries, access rules, workflows, side effects | touch `req`/`res` |
+| `models/` | schema, constraints, `toJSON` hiding private fields | contain HTTP concerns |
 | `validators/` | Zod schemas + inferred input types | run queries |
-| `middlewares/` | auth, validation, error handling | contain feature logic |
-| `utils/` | pure, stateless helpers | import models/services |
-| `config/` | env parsing, client/connection setup | contain feature logic |
-
-**Rule of thumb**: If logic is used by exactly one controller and is simple, inline it in the controller. If it has side effects (email, upload) or is shared, put it in a service.
+| `middlewares/` | auth, roles, validation, upload, errors | contain feature logic |
+| `utils/` | pure helpers | import services |
+| `config/` | env parsing, clients | contain feature logic |
 
 ## Directory Map
 
 ```
 src/
-├── app.ts               # express app: cors, json, rate-limit, mount routers, error mw
-├── server.ts            # connectDb() then app.listen()
-├── config/
-│   ├── env.ts           # single typed env object; throws if required vars missing
-│   ├── db.ts            # mongoose connection
-│   └── cloudinary.ts    # cloudinary client config
-├── models/              # <name>.model.ts — Mongoose schemas
-├── validators/          # <name>.validator.ts — Zod schemas + inferred types
-├── services/            # <name>.service.ts — business logic + side effects
-├── controllers/         # <name>.controller.ts — exported handler functions
+├── app.ts               # helmet, cors, json, morgan, rate limits, routers, 404, error handler
+├── server.ts            # connectDb() → listen; graceful shutdown on SIGINT/SIGTERM
+├── config/              # env.ts (Zod-validated), db.ts, cloudinary.ts (isCloudinaryConfigured)
+├── models/              # user.model.ts, note.model.ts
+├── validators/          # common.validator.ts (idParamsSchema, objectIdSchema, booleanQuerySchema), <name>.validator.ts
+├── services/            # <name>.service.ts, email.service.ts, cloudinary.service.ts
+├── controllers/         # <name>.controller.ts
 ├── routes/              # <name>.route.ts — export <name>Router
-├── middlewares/         # auth / validate / error
-├── utils/               # jwt, hash, otp
-└── types/express.d.ts   # augments Express Request (e.g. req.user)
+├── middlewares/         # auth, role, validate, upload, not-found, error
+├── utils/               # app-error.ts, pagination.ts, jwt.ts, hash.ts, otp.ts
+├── scripts/seed.ts      # demo accounts (npm run seed)
+└── types/express.d.ts   # req.user
 ```
 
 ## Naming Conventions
 
-- Files: `kebab-case` with layer suffix — `profile.controller.ts`, `auth.validator.ts`, `user.model.ts`.
-- Routers: exported as `<feature>Router` (e.g. `profileRouter`).
-- Models: exported as `<Name>Model` + `<Name>Document` interface.
-- Controllers: named exports, one function per endpoint (`updateProfile`, `uploadAvatar`).
+- Files: `kebab-case` with layer suffix — `note.controller.ts`, `lesson-plan.validator.ts`.
+- Routers: `<feature>Router`. Models: `<Name>Model` + `<Name>Document`.
+- Controllers: named exports, one per endpoint (`listNotes`, `createNote`).
 - Validators: `<action>Schema` + inferred `<Action>Input` type.
 
 ## Core Patterns
 
 ### 1. Environment (`config/env.ts`)
-All env access goes through the typed `env` object — never read `process.env` elsewhere. Add new vars there with a sensible default, and add hard-fail checks for required secrets:
-
-```ts
-export const env = { port: Number(rawEnv.PORT ?? 5000), /* ... */ };
-if (!env.mongoUri || !env.jwtSecret) throw new Error('Missing required environment variables');
-```
-Mirror every new var in `.env.example`.
+All variables are parsed by one Zod schema; startup fails with a list of every invalid variable. In production `JWT_SECRET` must be ≥ 32 characters and not the example value. Add new variables to the schema and to `.env.example`. Never read `process.env` elsewhere.
 
 ### 2. Routes → middleware chain
-Standard order: `authGuard` (if protected) → `validateBody(schema)` → controller. File uploads use `multer` before the controller.
 
 ```ts
-profileRouter.patch('/', authGuard, validateBody(updateProfileSchema), updateProfile);
-profileRouter.post('/avatar', authGuard, upload.single('avatar'), uploadAvatar);
+noteRouter.use(authGuard, requireRole('user', 'admin'));          // all routes: signed in, role loaded
+noteRouter.get('/', validate({ query: listNotesQuerySchema }), listNotes);
+noteRouter.patch('/:id', validate({ params: idParamsSchema, body: updateNoteSchema }), updateNote);
+profileRouter.post('/avatar', authGuard, imageUpload.single('avatar'), uploadAvatar);
 ```
-Mount the router in `app.ts` under `/api/<feature>`.
+Mount in `app.ts`: `app.use('/api/<plural>', <name>Router)` (before `notFoundHandler`). `npm run gen:module` does this for you.
 
-### 3. Validation (`validateBody`)
-Zod schema `.parse()` replaces `req.body` with the parsed value; failures return `400` with `{ message, errors: [{ field, message }] }`. Define schemas in `validators/` and export the inferred input type for controllers to cast against:
+### 3. Validation (`validate`)
+`validate({ body?, query?, params? })` parses each part with Zod and replaces it with the parsed value, so `req.query.page` is a number. Failures answer `400 { message: 'Validation failed', errors: [{ field, message }] }`. `validateBody(schema)` is shorthand for `validate({ body: schema })`.
+
+### 4. Auth and roles
+- `authGuard` verifies `Authorization: Bearer <token>` and sets `req.user = { sub, email }`.
+- `requireRole(...roles)` loads the user's role from the database (so promotions apply without re-login), sets `req.user.role`, and answers 403 otherwise.
+- Login: password check → if `user.loginOtpEnabled`, email an OTP (202 `{ requiresOtp }`), else return `{ token }`. Users toggle it with `PATCH /api/profile/security`.
+
+### 5. Controllers — thin
 
 ```ts
-export const updateProfileSchema = z.object({ displayName: z.string().trim().min(1).max(100).optional() /* ... */ });
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+const actorOf = (req: Request) => ({ id: req.user!.sub, role: req.user!.role });
+export const updateNote = async (req: Request, res: Response) => {
+  res.json(await noteService.updateNote(actorOf(req), req.params.id as string, req.body as UpdateNoteInput));
+};
 ```
+No try/catch: Express 5 forwards rejected promises to the error handler.
 
-### 4. Auth (`authGuard` + JWT)
-`authGuard` reads `Authorization: Bearer <token>`, verifies via `utils/jwt`, and sets `req.user = { sub, email }` (typed in `types/express.d.ts`). Controllers read the user id via `req.user?.sub`. Token is signed at successful login-OTP verification.
-
-### 5. Controllers
-Keep thin. Read validated `req.body`/`req.user`, call model/service, return explicit status codes. Never leak sensitive fields — profile responses use `EXCLUDED_FIELDS` (`-password -otpCode -otpExpiresAt -resetToken -resetTokenExpiresAt`) via `.select()`.
+### 6. Services — queries and access rules
 
 ```ts
-export const updateProfile = async (req: Request, res: Response) => {
-  const userId = req.user?.sub;
-  const { displayName, bio, phone } = req.body as UpdateProfileInput;
-  const user = await UserModel.findByIdAndUpdate(userId, { displayName, bio, phone },
-    { new: true, runValidators: true }).select(EXCLUDED_FIELDS);
-  if (!user) return res.status(404).json({ message: 'User not found' });
-  return res.json(user);
+const accessFilter = (actor: Actor, id?: string) => ({ ...(id ? { _id: id } : {}), ...(isAdmin(actor) ? {} : { owner: actor.id }) });
+export const updateNote = async (actor: Actor, id: string, input: UpdateNoteInput) => {
+  const note = await NoteModel.findOneAndUpdate(accessFilter(actor, id), input, { new: true, runValidators: true });
+  if (!note) throw notFound('Note not found');   // also for other users' notes: never reveal they exist
+  return note;
 };
 ```
 
-### 6. Services (side effects & workflows)
-Multi-step flows with side effects live here — never in controllers. Return `null` on "not found / conflict" and let the controller translate to a status code.
+### 7. Lists (`utils/pagination.ts`)
+Extend `paginationQuerySchema` (`page`, `limit ≤ 100`, `sort` like `-createdAt`) and declare the sortable fields with `sort: sortSchema(['createdAt', 'title'])` (anything else answers 400 — never list private fields). Return `paginate(Model, filter, query)` → `{ items, page, limit, total, totalPages }`. Ties are broken by `_id`, so pages never overlap. Escape user text before building a `RegExp` (see `note.service.ts`).
 
-```ts
-export const createUserWithOtp = async (email, password) => {
-  if (await UserModel.findOne({ email })) return null;   // controller → 409
-  const user = await UserModel.create({ email, password: await hashPassword(password), otpCode: generateOtp(), otpExpiresAt: otpExpiry() });
-  await sendOtpEmail(email, otp);
-  return user;
-};
-```
+### 7b. Admin endpoints (`routes/admin.route.ts`)
+All under `/api/admin`. **Base default: guarded by `authGuard` only, so every signed-in account can use them** (students can try the admin area). To allow admins only, change the guard line to `adminRouter.use(authGuard, requireRole('admin'))` and add `roles={['admin']}` to the admin route in `FE/src/App.tsx`. Endpoints: `GET /stats`, `GET /users` (search `q`, filters `role`, `verified`, allowlisted `sort`, pagination), `GET|PATCH|DELETE /users/:id`, `POST /users/bulk-delete` (`{ ids }`, `bulkIdsSchema`). Deleting a user also deletes their notes and avatar. The signed-in account can never remove its own admin role or delete itself (checked in `admin-user.service.ts`, keep it). Yes/no filters use `optionalBooleanQuerySchema` (missing = no filter).
 
-### 7. Error handling
-`errorMiddleware` is mounted last in `app.ts` and returns `500 { message }`. For thrown errors in async handlers, Express 5 forwards rejections automatically. Use explicit status codes (`400/401/403/404/409`) inside handlers for expected outcomes.
+### 8. Errors (`utils/app-error.ts` + `errorMiddleware`)
+Throw `badRequest`, `unauthorized`, `forbidden`, `notFound`, `conflict` or `new AppError(status, message, details?)`. The error middleware also maps: malformed JSON body → 400, JSON body over 100 kB → 413, `ZodError` → 400, Multer file too large → 413, other Multer errors → 400, invalid ObjectId → 400, Mongoose validation → 400, duplicate key → 409. Anything else → `500 { message: 'Internal server error' }` (stack logged on the server, included in the body only in development). Unknown routes → `404 { message: 'Route not found: ...' }`.
 
-### 8. Models
-Define a `<Name>Document` interface + `Schema`, enable `{ timestamps: true }`, apply DB-level constraints (`unique`, `trim`, `lowercase`, `maxlength`). Validation is duplicated at two levels by design: Zod (request shape) + Mongoose (persistence).
+### 9. Models
+`<Name>Document` interface + `Schema`, `{ timestamps: true }`, DB constraints (`required`, `maxlength`, `enum`), indexes for the default list query, and a `toJSON` transform that removes `__v` and any private field. The User model strips `password`, `otpCode`, `otpExpiresAt`, `resetToken`, `resetTokenExpiresAt` in `toJSON`, so returning a user **document** is safe. `.lean()` and `aggregate()` return plain objects that skip `toJSON`: with those, `.select()` / `$project` the public fields explicitly.
+
+### 10. External services
+- Email: `sendEmail(to, subject, html)`. Without `SMTP_HOST`, mail goes to nodemailer's JSON transport and is printed to the console in development; in production it throws `AppError(503)` so codes never reach the logs.
+- AI: `generateChatReply(messages)` in `services/ai.service.ts` calls Google Gemini through `@google/genai` with the system prompt and thinking level (default `LOW`) from `config/chatbot.ts`; default model `gemini-3.5-flash-lite`. Without `GEMINI_API_KEY` it throws `AppError(503)`; Gemini 429 → 429, bad key/model → 503, other failures → 502. `POST /api/chat` adds `authGuard` and a per-user limit of 10 requests per minute.
+- Images: `uploadImage(buffer, folder)` / `deleteImage(publicId)`. Without Cloudinary variables, upload throws `AppError(503)` and delete is a no-op. Store the returned `publicId` to delete the image later.
 
 ## HTTP Response Conventions
 
 | Situation | Status | Body |
 |-----------|--------|------|
-| Success (data) | 200 | the resource / `{ ...fields }` |
-| Created | 201 | `{ message }` |
-| Accepted (OTP step) | 202 | `{ message, requiresOtp, email }` |
+| Read / update | 200 | the resource |
+| List | 200 | `{ items, page, limit, total, totalPages }` |
+| Create | 201 | the created resource (auth register: `{ message }`) |
+| Delete | 204 | empty |
+| Login OTP step | 202 | `{ message, requiresOtp, email }` |
 | Validation error | 400 | `{ message, errors: [{ field, message }] }` |
-| Unauthorized | 401 | `{ message }` |
-| Forbidden (unverified) | 403 | `{ message }` |
-| Not found | 404 | `{ message }` |
-| Conflict (dup email) | 409 | `{ message }` |
+| Unauthorized / forbidden | 401 / 403 | `{ message }` |
+| Not found (incl. other users' resources) | 404 | `{ message }` |
+| Conflict | 409 | `{ message }` |
+| File too large | 413 | `{ message }` |
+| Too many requests | 429 | `{ message }` |
+| Service not configured | 503 | `{ message }` |
 | Server error | 500 | `{ message }` |
 
-All API routes are mounted under `/api`. Health check: `GET /health` → `{ ok: true }`.
+All API routes are under `/api`. Health check: `GET /health` → `{ ok: true }`.
 
 ## Security Rules
 
-- Never return `password`, `otpCode`, `resetToken`, or their expiry fields — always `.select(EXCLUDED_FIELDS)`.
-- Passwords hashed with bcrypt (`utils/hash`); never store plaintext.
-- OTP / reset tokens are single-use — clear (`= undefined`) after successful verification.
-- Global rate limit: 300 req / 15 min (`app.ts`). Tighten per-route if adding sensitive endpoints.
-- CORS locked to `env.clientUrl`.
-- Uploads: memory storage, 5 MB cap, MIME allow-list (`jpeg/png/webp/gif`) — enforce both in `multer` config and re-check where relevant.
+- Private fields are removed by the model's `toJSON`; add new private fields to `PRIVATE_USER_FIELDS` (or the model's own transform).
+- Passwords hashed with bcrypt (`utils/hash`). OTP and reset codes are single-use. **Do not change the OTP functions** (`utils/otp.ts`, `createUserWithOtp`, `issueOtpForUser`, `issueResetToken`, OTP/reset handlers).
+- Rate limits: 300 req / 15 min globally, 20 req / 15 min on `/api/auth/*` except `/me` (both off in tests). Behind a reverse proxy set `TRUST_PROXY=1` (number of proxies) so limits apply per client, not per proxy.
+- `npm run seed` refuses to run with `NODE_ENV=production` (the demo admin has a public password).
+- Ownership checks live in services; other users' resources answer 404.
+- Uploads: memory storage, 5 MB, JPEG/PNG/WebP/GIF only (`imageUpload`).
+
+## Testing
+
+- `tests/unit` — pure functions and middlewares. `tests/integration` — real app over HTTP with an in-memory MongoDB.
+  The mongod binary is downloaded once in `tests/setup/download-mongod.ts` (Vitest `globalSetup`) before the parallel workers start; each file then starts its own mongod.
+- Use `api()` from `tests/helpers/api.ts` (binds to 127.0.0.1; `request(app)` can hit other local servers on macOS). For a custom router use `serve(app)`.
+- `createUser({ role, loginOtpEnabled, ... })` + `bearerFor(user)` from `tests/helpers/user-factory.ts`. Emails: `tests/helpers/email-outbox.ts`; Cloudinary: `tests/helpers/cloudinary-recorder.ts`.
+- See `tests/integration/notes.test.ts` for CRUD, ownership, pagination and validation cases.
 
 ## Playbook: Add a New Feature Endpoint
 
-1. **Model** — add/extend schema in `models/<name>.model.ts` (constraints + `Document` interface).
-2. **Validator** — Zod schema + inferred type in `validators/<name>.validator.ts`.
-3. **Service** — if side effects / reuse / multi-step, add `services/<name>.service.ts`.
-4. **Controller** — thin handler in `controllers/<name>.controller.ts` returning correct status codes; strip sensitive fields.
-5. **Route** — `routes/<name>.route.ts`: `export const <name>Router`, chain `authGuard`/`validateBody`.
-6. **Mount** — `app.use('/api/<name>', <name>Router)` in `app.ts`.
-7. **Env** — add any new vars to `config/env.ts` (typed + default/guard) and `.env.example`.
-8. **Verify** — `npm run build` (tsc) must pass with no errors.
+1. `npm run gen:module -- <name>` from the repository root (copies `notes`, registers the router), then change the fields. Or by hand:
+2. **Model** — `models/<name>.model.ts` (constraints, indexes, `toJSON`).
+3. **Validator** — create / update / list-query schemas in `validators/<name>.validator.ts`.
+4. **Service** — queries with `accessFilter`, `paginate`, `throw notFound(...)`.
+5. **Controller** — thin handlers; 201 on create, 204 on delete.
+6. **Route** — `authGuard`, `requireRole`, `validate` per endpoint; mount in `app.ts`.
+7. **Env** — new variables in `config/env.ts` and `.env.example`.
+8. **Tests** — integration test like `notes.test.ts`.
+9. **Verify** — `npm test` and `npm run build`.
 
 ## Do / Don't
 
-- ✅ Keep controllers thin; push side effects to services.
-- ✅ Validate every request body with Zod via `validateBody`.
-- ✅ Route all config through `env`; mirror in `.env.example`.
-- ✅ Return typed, sensitive-field-stripped responses.
+- ✅ Keep controllers thin; put queries and access rules in services.
+- ✅ Validate body, query and params with `validate`.
+- ✅ Throw `AppError` helpers for expected failures.
+- ✅ Use `paginate` for every list.
+- ❌ Don't send error responses by hand or wrap handlers in try/catch.
 - ❌ Don't read `process.env` outside `config/env.ts`.
-- ❌ Don't put business logic in routes or reuse controllers from controllers.
-- ❌ Don't return raw Mongoose documents that include secrets.
+- ❌ Don't return documents with private fields that `toJSON` does not strip.
 - ❌ Don't add new top-level folders without a clear layer justification.

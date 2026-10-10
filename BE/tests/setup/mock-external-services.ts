@@ -1,7 +1,7 @@
 import { beforeEach, vi } from 'vitest';
 
 /**
- * Replaces every outbound third-party dependency (SMTP, Cloudinary) with an
+ * Replaces every outbound third-party dependency (SMTP, Cloudinary, Gemini) with an
  * in-memory recorder. Real application code still runs end to end; only the
  * network boundary is faked.
  */
@@ -48,9 +48,29 @@ vi.mock('cloudinary', async () => {
   return { v2, default: { v2 } };
 });
 
+vi.mock('@google/genai', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@google/genai')>();
+  const { geminiRecorder } = await import('../helpers/gemini-recorder');
+
+  class GoogleGenAI {
+    models = {
+      generateContent: async (params: Record<string, unknown>) => {
+        geminiRecorder.requests.push(params);
+        if (geminiRecorder.error) throw geminiRecorder.error;
+        return { text: geminiRecorder.replyText };
+      }
+    };
+  }
+
+  // Keep the real ApiError so `instanceof` checks in the service still work.
+  return { ...actual, GoogleGenAI };
+});
+
 beforeEach(async () => {
   const { clearEmailOutbox } = await import('../helpers/email-outbox');
   const { cloudinaryRecorder } = await import('../helpers/cloudinary-recorder');
+  const { geminiRecorder } = await import('../helpers/gemini-recorder');
   clearEmailOutbox();
   cloudinaryRecorder.reset();
+  geminiRecorder.reset();
 });

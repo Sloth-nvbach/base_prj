@@ -7,3 +7,9 @@ export const updateProfileSchema = z.object({
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const updateSecuritySchema = z.object({
+  loginOtpEnabled: z.boolean()
+});
+
+export type UpdateSecurityInput = z.infer<typeof updateSecuritySchema>;

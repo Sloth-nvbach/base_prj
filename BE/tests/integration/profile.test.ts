@@ -1,6 +1,5 @@
-import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { app } from '../../src/app';
+import { api } from '../helpers/api';
 import { UserModel } from '../../src/models/user.model';
 import { cloudinaryRecorder } from '../helpers/cloudinary-recorder';
 import { bearerFor, createUser } from '../helpers/user-factory';
@@ -19,7 +18,7 @@ describe('PATCH /api/profile', () => {
   it('updates the editable fields and hides every secret field', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .patch('/api/profile')
       .set('Authorization', bearerFor(user))
       .send({ displayName: 'Alice', bio: 'Hello', phone: '0123456789' });
@@ -34,7 +33,7 @@ describe('PATCH /api/profile', () => {
   it('trims the stored values', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .patch('/api/profile')
       .set('Authorization', bearerFor(user))
       .send({ displayName: '  Alice  ' });
@@ -43,14 +42,14 @@ describe('PATCH /api/profile', () => {
   });
 
   it('requires authentication', async () => {
-    const response = await request(app).patch('/api/profile').send({ displayName: 'Alice' });
+    const response = await api().patch('/api/profile').send({ displayName: 'Alice' });
     expect(response.status).toBe(401);
   });
 
   it('rejects invalid values with 400', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .patch('/api/profile')
       .set('Authorization', bearerFor(user))
       .send({ bio: 'b'.repeat(201) });
@@ -64,7 +63,7 @@ describe('PATCH /api/profile', () => {
     const authorization = bearerFor(user);
     await UserModel.deleteOne({ _id: user._id });
 
-    const response = await request(app)
+    const response = await api()
       .patch('/api/profile')
       .set('Authorization', authorization)
       .send({ displayName: 'Alice' });
@@ -77,7 +76,7 @@ describe('POST /api/profile/avatar', () => {
   it('uploads the image and persists the returned URL', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
@@ -98,7 +97,7 @@ describe('POST /api/profile/avatar', () => {
       avatarUrl: 'https://res.cloudinary.com/test-cloud/image/upload/v1700000000/avatars/old-avatar.png'
     });
 
-    await request(app)
+    await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
@@ -106,10 +105,30 @@ describe('POST /api/profile/avatar', () => {
     expect(cloudinaryRecorder.destroyed).toEqual(['avatars/old-avatar']);
   });
 
+  it('deletes the previous avatar by its stored public id', async () => {
+    const user = await createUser({});
+    const upload = () =>
+      api()
+        .post('/api/profile/avatar')
+        .set('Authorization', bearerFor(user))
+        .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
+
+    await upload();
+    cloudinaryRecorder.uploadResult = {
+      secure_url: 'https://res.cloudinary.com/test-cloud/image/upload/v2/avatars/nested/second.png',
+      public_id: 'avatars/nested/second'
+    };
+    await upload();
+    await upload();
+
+    expect(cloudinaryRecorder.destroyed).toEqual(['avatars/new-avatar', 'avatars/nested/second']);
+    expect((await UserModel.findById(user._id))?.avatarPublicId).toBe('avatars/nested/second');
+  });
+
   it('does not call delete when the user has no avatar yet', async () => {
     const user = await createUser({});
 
-    await request(app)
+    await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
@@ -123,7 +142,7 @@ describe('POST /api/profile/avatar', () => {
       avatarUrl: 'https://res.cloudinary.com/test-cloud/image/upload/v1/avatars/old-avatar.png'
     });
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
@@ -135,7 +154,7 @@ describe('POST /api/profile/avatar', () => {
   it('answers 400 when no file is attached', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user));
 
@@ -144,7 +163,7 @@ describe('POST /api/profile/avatar', () => {
   });
 
   it('requires authentication and never reaches Cloudinary', async () => {
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .attach('avatar', pngBuffer(), { filename: 'avatar.png', contentType: 'image/png' });
 
@@ -152,13 +171,10 @@ describe('POST /api/profile/avatar', () => {
     expect(cloudinaryRecorder.uploads).toEqual([]);
   });
 
-  // The multer filter rejects the file, so nothing must be uploaded. The status is
-  // currently 500 because `errorMiddleware` maps every error to 500; the assertion
-  // only pins "request failed, no upload" so a future 400 mapping stays green.
-  it('rejects a non-image file without uploading it', async () => {
+  it('rejects a non-image file with 400 without uploading it', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', Buffer.from('%PDF-1.4'), {
@@ -166,14 +182,15 @@ describe('POST /api/profile/avatar', () => {
         contentType: 'application/pdf'
       });
 
-    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('Only JPEG, PNG, WebP, and GIF images are allowed');
     expect(cloudinaryRecorder.uploads).toEqual([]);
   });
 
-  it('rejects a file larger than 5 MB without uploading it', async () => {
+  it('rejects a file larger than 5 MB with 413 without uploading it', async () => {
     const user = await createUser({});
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/profile/avatar')
       .set('Authorization', bearerFor(user))
       .attach('avatar', pngBuffer(6 * 1024 * 1024), {
@@ -181,21 +198,54 @@ describe('POST /api/profile/avatar', () => {
         contentType: 'image/png'
       });
 
-    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(response.status).toBe(413);
     expect(cloudinaryRecorder.uploads).toEqual([]);
   });
 });
 
 describe('smoke endpoints', () => {
   it('exposes a health check', async () => {
-    const response = await request(app).get('/health');
+    const response = await api().get('/health');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
   });
 
+  it('answers unknown routes with a JSON 404', async () => {
+    const response = await api().get('/api/does-not-exist');
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Route not found: GET /api/does-not-exist');
+  });
+
+  it('sets security headers', async () => {
+    const response = await api().get('/health');
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
+  });
+
   it('exposes the root welcome message', async () => {
-    const response = await request(app).get('/');
+    const response = await api().get('/');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: 'Welcome to the API' });
+  });
+});
+
+describe('request body errors', () => {
+  it('answers 400 for malformed JSON instead of 500', async () => {
+    const response = await api()
+      .post('/api/auth/login')
+      .set('Content-Type', 'application/json')
+      .send('{"email": "a@b.com",');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ message: 'Invalid JSON body' });
+  });
+
+  it('answers 413 for a body over the JSON limit', async () => {
+    const response = await api()
+      .post('/api/auth/login')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify({ email: 'a@b.com', password: 'x'.repeat(200 * 1024) }));
+
+    expect(response.status).toBe(413);
+    expect(response.body).toEqual({ message: 'Request body too large' });
   });
 });

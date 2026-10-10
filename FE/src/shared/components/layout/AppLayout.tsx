@@ -1,37 +1,27 @@
-import { useEffect, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, LogOut, ShieldCheck } from 'lucide-react';
+import type { ComponentType } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { LogOut, ShieldCheck } from 'lucide-react';
+import type { NavItem } from '@/app/module.types';
 import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
-import { authApi } from '@/modules/auth/api/auth.api';
-import { tokenStore } from '@/modules/auth/store/token.store';
+import { useCurrentUser, useLogout } from '@/modules/auth/hooks/use-current-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
-import type { CurrentUser } from '@/modules/auth/types/auth.types';
 
-const navItems = [
-  { to: '/', label: 'Home', icon: Home },
-  { to: '/profile', label: 'Profile', icon: User },
-];
+interface AppLayoutProps {
+  navItems: NavItem[];
+  /** Floating components from the module registry (e.g. the chat button). */
+  widgets?: ComponentType[];
+}
 
-export const AppLayout = () => {
-  const [user, setUser] = useState<CurrentUser | null>(null);
+export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProps) => {
+  // An expired or rejected token answers 401, which the http interceptor turns
+  // into a redirect to /logout. Other failures (server down) keep the user signed in.
+  const { data: user } = useCurrentUser();
   const location = useLocation();
-  const navigate = useNavigate();
+  const handleLogout = useLogout();
 
-  useEffect(() => {
-    authApi.getMe()
-      .then((res) => setUser(res.data as CurrentUser))
-      .catch(() => {
-        tokenStore.clear();
-        navigate('/login');
-      });
-  }, [navigate]);
-
-  const handleLogout = () => {
-    tokenStore.clear();
-    navigate('/login');
-  };
+  const navItems = allNavItems.filter((item) => !item.roles || (user && item.roles.includes(user.role)));
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? '??';
 
@@ -84,6 +74,10 @@ export const AppLayout = () => {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Outlet />
       </main>
+
+      {widgets.map((Widget, index) => (
+        <Widget key={index} />
+      ))}
     </div>
   );
 };

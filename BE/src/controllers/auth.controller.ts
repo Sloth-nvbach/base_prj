@@ -37,6 +37,10 @@ export const login = async (req: Request, res: Response) => {
     return res.status(403).json({ message: 'Please verify your email first using register OTP' });
   }
 
+  if (!user.loginOtpEnabled) {
+    return res.json({ token: signToken({ sub: String(user._id), email: user.email }) });
+  }
+
   await issueOtpForUser(String(user._id));
   return res.status(202).json({ message: 'OTP has been sent to your email', requiresOtp: true, email: user.email });
 };
@@ -83,7 +87,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const getMe = async (req: Request, res: Response) => {
   const userId = req.user?.sub;
-  const user = await UserModel.findById(userId).select('-password -otpCode -resetToken');
+  const user = await UserModel.findById(userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
   return res.json(user);
 };

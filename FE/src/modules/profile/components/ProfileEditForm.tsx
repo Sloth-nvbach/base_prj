@@ -1,13 +1,14 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useSetCurrentUser } from '@/modules/auth/hooks/use-current-user';
 import { profileApi } from '@/modules/profile/api/profile.api';
-import { getApiErrorMessage } from '@/shared/api/api-error';
+import { FormField } from '@/shared/components/form-field';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 // Accepts digits with optional leading + and common separators (spaces, dashes, parentheses).
 const phoneRegex = /^\+?[\d\s().-]+$/;
@@ -42,77 +43,49 @@ type SubmitValues = z.output<typeof schema>;
 
 interface ProfileEditFormProps {
   defaultValues: FormValues;
-  onSuccess: () => void;
 }
 
-export const ProfileEditForm = ({ defaultValues, onSuccess }: ProfileEditFormProps) => {
-  const [saving, setSaving] = useState(false);
+export const ProfileEditForm = ({ defaultValues }: ProfileEditFormProps) => {
+  const setCurrentUser = useSetCurrentUser();
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues, unknown, SubmitValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues, unknown, SubmitValues>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  const bioValue = watch('bio') ?? '';
-
-  const onSubmit = handleSubmit(async (values) => {
-    setSaving(true);
-    try {
-      await profileApi.updateProfile(values);
+  // No `onError`: the shared query client shows the backend message as a toast.
+  const updateProfile = useMutation({
+    mutationFn: profileApi.updateProfile,
+    onSuccess: (user) => {
+      setCurrentUser(user);
       toast.success('Profile updated successfully.');
-      onSuccess();
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to update profile.'));
-    } finally {
-      setSaving(false);
-    }
+    },
   });
 
-  return (
-    <form className="space-y-5" onSubmit={onSubmit}>
-      <div className="space-y-2">
-        <Label htmlFor="displayName">Display Name</Label>
-        <Input
-          id="displayName"
-          placeholder="Your name"
-          {...register('displayName')}
-        />
-        {errors.displayName && (
-          <p className="text-xs text-destructive">{errors.displayName.message}</p>
-        )}
-      </div>
+  const bioValue = useWatch({ control, name: 'bio' }) ?? '';
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="bio">Bio</Label>
-          <span className="text-xs text-muted-foreground">{bioValue.length}/200</span>
-        </div>
-        <textarea
+  return (
+    <form className="space-y-5" onSubmit={handleSubmit((values) => updateProfile.mutate(values))}>
+      <FormField id="displayName" label="Display Name" error={errors.displayName?.message}>
+        <Input id="displayName" placeholder="Your name" {...register('displayName')} />
+      </FormField>
+
+      <FormField id="bio" label="Bio" error={errors.bio?.message} hint={`${bioValue.length}/200`}>
+        <Textarea
           id="bio"
           rows={3}
           placeholder="Tell us a little about yourself..."
-          className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="resize-none"
           {...register('bio')}
         />
-        {errors.bio && (
-          <p className="text-xs text-destructive">{errors.bio.message}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone</Label>
-        <Input
-          id="phone"
-          placeholder="+1 555 000 0000"
-          {...register('phone')}
-        />
-        {errors.phone && (
-          <p className="text-xs text-destructive">{errors.phone.message}</p>
-        )}
-      </div>
+      <FormField id="phone" label="Phone" error={errors.phone?.message}>
+        <Input id="phone" placeholder="+1 555 000 0000" {...register('phone')} />
+      </FormField>
 
-      <Button type="submit" className="w-full" disabled={saving}>
-        {saving ? 'Saving…' : 'Save Changes'}
+      <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
+        {updateProfile.isPending ? 'Saving…' : 'Save Changes'}
       </Button>
     </form>
   );

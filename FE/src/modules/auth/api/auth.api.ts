@@ -1,15 +1,19 @@
-import { http } from '../../../shared/api/http';
-import type { AuthPayload } from '../types/auth.types';
+import { http } from '@/shared/api/http';
+import type { AuthPayload, CurrentUser, LoginResponse, MessageResponse } from '../types/auth.types';
 
+/** Every function resolves with the response body (not the Axios response). */
 export const authApi = {
-  register: (payload: AuthPayload) => http.post('/auth/register', payload),
+  register: (payload: AuthPayload) =>
+    http.post<MessageResponse>('/auth/register', payload).then((r) => r.data),
   verifyRegisterOtp: (email: string, otp: string) =>
-    http.post('/auth/register/verify-otp', { email, otp }),
-  login: (payload: AuthPayload) => http.post('/auth/login', payload),
+    http.post<MessageResponse>('/auth/register/verify-otp', { email, otp }).then((r) => r.data),
+  login: (payload: AuthPayload) =>
+    http.post<LoginResponse>('/auth/login', payload).then((r) => r.data),
   verifyLoginOtp: (email: string, otp: string) =>
-    http.post('/auth/login/verify-otp', { email, otp }),
-  forgotPassword: (email: string) => http.post('/auth/forgot-password', { email }),
+    http.post<{ token: string }>('/auth/login/verify-otp', { email, otp }).then((r) => r.data),
+  forgotPassword: (email: string) =>
+    http.post<MessageResponse>('/auth/forgot-password', { email }).then((r) => r.data),
   resetPassword: (email: string, token: string, newPassword: string) =>
-    http.post('/auth/reset-password', { email, token, newPassword }),
-  getMe: () => http.get('/auth/me')
+    http.post<MessageResponse>('/auth/reset-password', { email, token, newPassword }).then((r) => r.data),
+  getMe: () => http.get<CurrentUser>('/auth/me').then((r) => r.data),
 };

@@ -1,10 +1,19 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { deleteImage, uploadImage } from '../services/cloudinary.service';
-import { UpdateProfileInput } from '../validators/profile.validator';
+import { badRequest, notFound } from '../utils/app-error';
+import { UpdateProfileInput, UpdateSecurityInput } from '../validators/profile.validator';
 
-// Fields excluded from all profile responses
-const EXCLUDED_FIELDS = '-password -otpCode -otpExpiresAt -resetToken -resetTokenExpiresAt';
+/**
+ * Derives the Cloudinary public id from a stored URL. Only used for avatars
+ * uploaded before `avatarPublicId` was persisted.
+ */
+const publicIdFromUrl = (url: string) => {
+  const parts = url.split('/');
+  const filename = parts[parts.length - 1].replace(/\.[^/.]+$/, '');
+  const folder = parts[parts.length - 2];
+  return `${folder}/${filename}`;
+};
 
 export const updateProfile = async (req: Request, res: Response) => {
   const userId = req.user?.sub;
@@ -13,28 +22,32 @@ export const updateProfile = async (req: Request, res: Response) => {
   const user = await UserModel.findByIdAndUpdate(
     userId,
     { displayName, bio, phone },
-    { new: true, runValidators: true }
-  ).select(EXCLUDED_FIELDS);
+    { returnDocument: 'after', runValidators: true }
+  );
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) throw notFound('User not found');
+  return res.json(user);
+};
+
+export const updateSecurity = async (req: Request, res: Response) => {
+  const { loginOtpEnabled } = req.body as UpdateSecurityInput;
+
+  const user = await UserModel.findByIdAndUpdate(req.user?.sub, { loginOtpEnabled }, { returnDocument: 'after' });
+
+  if (!user) throw notFound('User not found');
   return res.json(user);
 };
 
 export const uploadAvatar = async (req: Request, res: Response) => {
   const userId = req.user?.sub;
 
-  if (!req.file) return res.status(400).json({ message: 'No file provided' });
+  if (!req.file) throw badRequest('No file provided');
 
   const user = await UserModel.findById(userId);
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!user) throw notFound('User not found');
 
-  // Delete old avatar from Cloudinary if it exists
-  if (user.avatarUrl) {
-    // Extract public ID: last two path segments joined by '/' without extension
-    const parts = user.avatarUrl.split('/');
-    const filename = parts[parts.length - 1].replace(/\.[^/.]+$/, '');
-    const folder = parts[parts.length - 2];
-    const oldPublicId = `${folder}/${filename}`;
+  const oldPublicId = user.avatarPublicId ?? (user.avatarUrl ? publicIdFromUrl(user.avatarUrl) : undefined);
+  if (oldPublicId) {
     await deleteImage(oldPublicId).catch(() => {
       // Non-fatal: old image cleanup failure should not block the upload
     });
@@ -42,8 +55,8 @@ export const uploadAvatar = async (req: Request, res: Response) => {
 
   const { url, publicId } = await uploadImage(req.file.buffer, 'avatars');
   user.avatarUrl = url;
+  user.avatarPublicId = publicId;
   await user.save();
 
-  const updated = await UserModel.findById(userId).select(EXCLUDED_FIELDS);
-  return res.json({ avatarUrl: url, publicId, user: updated });
+  return res.json({ avatarUrl: url, publicId, user });
 };

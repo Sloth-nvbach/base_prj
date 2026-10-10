@@ -1,18 +1,56 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
+import { AppError } from '../utils/app-error';
 
-const transporter = nodemailer.createTransport({
-  host: env.smtpHost,
-  port: env.smtpPort,
-  secure: env.smtpSecure,
-  auth: {
-    user: env.smtpUser,
-    pass: env.smtpPass
-  }
-});
+/**
+ * Without SMTP settings the app still works in development: mail is rendered by
+ * nodemailer's JSON transport (nothing leaves the machine) and printed to the
+ * console, so OTP codes can be read from the backend terminal. In production
+ * sending answers 503 instead, so codes never end up in logs.
+ */
+export const isSmtpConfigured = Boolean(env.smtpHost);
+
+const transporter = isSmtpConfigured
+  ? nodemailer.createTransport({
+      host: env.smtpHost,
+      port: env.smtpPort,
+      secure: env.smtpSecure,
+      auth: { user: env.smtpUser, pass: env.smtpPass }
+    })
+  : nodemailer.createTransport({ jsonTransport: true });
+
+if (!isSmtpConfigured && env.nodeEnv === 'production') {
+  console.warn('Warning: SMTP_HOST is not set. Sending email answers 503 until it is.');
+}
+
+const htmlToText = (html: string) =>
+  html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/** Prints an email in a block that is easy to spot in the dev server output. */
+export const formatDevEmail = (to: string, subject: string, html: string) =>
+  [
+    '',
+    '================ DEV EMAIL (SMTP not configured) ================',
+    `To:      ${to}`,
+    `Subject: ${subject}`,
+    '',
+    htmlToText(html),
+    '=================================================================',
+    ''
+  ].join('\n');
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
+  // Never print codes into production logs.
+  if (!isSmtpConfigured && env.nodeEnv === 'production') {
+    throw new AppError(503, 'Email is not configured. Set the SMTP_* variables.');
+  }
   await transporter.sendMail({ from: env.emailFrom, to, subject, html });
+  if (!isSmtpConfigured && env.nodeEnv !== 'test') {
+    console.log(formatDevEmail(to, subject, html));
+  }
 };
 
 export const sendOtpEmail = async (to: string, otp: string) => {

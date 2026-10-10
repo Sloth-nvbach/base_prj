@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Upload, Settings } from 'lucide-react';
-import { authApi } from '@/modules/auth/api/auth.api';
+import { StickyNote, User, Upload } from 'lucide-react';
+import { useCurrentUser } from '@/modules/auth/hooks/use-current-user';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import type { CurrentUser } from '@/modules/auth/types/auth.types';
 
 const quickActions = [
   {
@@ -19,21 +17,15 @@ const quickActions = [
     to: '/profile',
   },
   {
-    title: 'Account Settings',
-    description: 'Manage your account preferences and security.',
-    icon: Settings,
-    to: '/profile',
+    title: 'Notes',
+    description: 'Example feature to copy when you build your own.',
+    icon: StickyNote,
+    to: '/notes',
   },
 ];
 
 export const HomePage = () => {
-  const [user, setUser] = useState<CurrentUser | null>(null);
-
-  useEffect(() => {
-    authApi.getMe()
-      .then((res) => setUser(res.data as CurrentUser))
-      .catch(() => {});
-  }, []);
+  const { data: user } = useCurrentUser();
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 

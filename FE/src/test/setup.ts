@@ -4,8 +4,18 @@ import { afterEach, beforeEach, vi } from 'vitest';
 
 /**
  * Shared jsdom setup: unmounts React trees, clears browser storage and provides
- * the `matchMedia` stub jsdom lacks (used by the theme helpers).
+ * the browser APIs jsdom lacks: `matchMedia` (theme helpers) and `ResizeObserver`
+ * (Radix Switch inside a form).
  */
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+if (!('ResizeObserver' in globalThis)) {
+  Object.defineProperty(globalThis, 'ResizeObserver', { writable: true, value: ResizeObserverStub });
+}
+
 beforeEach(() => {
   window.localStorage.clear();
 

@@ -7,4 +7,8 @@ cloudinary.config({
   api_secret: env.cloudinaryApiSecret
 });
 
+export const isCloudinaryConfigured = Boolean(
+  env.cloudinaryCloudName && env.cloudinaryApiKey && env.cloudinaryApiSecret
+);
+
 export { cloudinary };

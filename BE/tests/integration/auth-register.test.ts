@@ -1,6 +1,5 @@
-import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { app } from '../../src/app';
+import { api } from '../helpers/api';
 import { UserModel } from '../../src/models/user.model';
 import { emailOutbox, lastEmailTo } from '../helpers/email-outbox';
 import { createUser, readSecrets } from '../helpers/user-factory';
@@ -9,7 +8,7 @@ const validPayload = { email: 'new@example.com', password: 'Passw0rd!' };
 
 describe('POST /api/auth/register', () => {
   it('creates an unverified user, stores an OTP and emails it', async () => {
-    const response = await request(app).post('/api/auth/register').send(validPayload);
+    const response = await api().post('/api/auth/register').send(validPayload);
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({ message: 'OTP has been sent to your email' });
@@ -24,20 +23,20 @@ describe('POST /api/auth/register', () => {
   });
 
   it('never returns the OTP in the response body', async () => {
-    const response = await request(app).post('/api/auth/register').send(validPayload);
+    const response = await api().post('/api/auth/register').send(validPayload);
     const { otpCode } = await readSecrets(validPayload.email);
     expect(JSON.stringify(response.body)).not.toContain(otpCode as string);
   });
 
   it('stores the email lowercased', async () => {
-    await request(app).post('/api/auth/register').send({ ...validPayload, email: 'MiXeD@Example.COM' });
+    await api().post('/api/auth/register').send({ ...validPayload, email: 'MiXeD@Example.COM' });
     expect(await UserModel.findOne({ email: 'mixed@example.com' })).not.toBeNull();
   });
 
   it('rejects a duplicate email with 409', async () => {
     await createUser({ email: validPayload.email });
 
-    const response = await request(app).post('/api/auth/register').send(validPayload);
+    const response = await api().post('/api/auth/register').send(validPayload);
 
     expect(response.status).toBe(409);
     expect(response.body.message).toBe('Email already exists');
@@ -45,7 +44,7 @@ describe('POST /api/auth/register', () => {
   });
 
   it('rejects an invalid payload with 400 before touching the database', async () => {
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/register')
       .send({ email: 'not-an-email', password: '123' });
 
@@ -57,7 +56,7 @@ describe('POST /api/auth/register', () => {
 
 describe('POST /api/auth/register/verify-otp', () => {
   const registerAndReadOtp = async () => {
-    await request(app).post('/api/auth/register').send(validPayload);
+    await api().post('/api/auth/register').send(validPayload);
     const { otpCode } = await readSecrets(validPayload.email);
     return otpCode as string;
   };
@@ -65,7 +64,7 @@ describe('POST /api/auth/register/verify-otp', () => {
   it('verifies the email and clears the OTP', async () => {
     const otp = await registerAndReadOtp();
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/register/verify-otp')
       .send({ email: validPayload.email, otp });
 
@@ -78,9 +77,9 @@ describe('POST /api/auth/register/verify-otp', () => {
 
   it('cannot reuse the same OTP twice', async () => {
     const otp = await registerAndReadOtp();
-    await request(app).post('/api/auth/register/verify-otp').send({ email: validPayload.email, otp });
+    await api().post('/api/auth/register/verify-otp').send({ email: validPayload.email, otp });
 
-    const replay = await request(app)
+    const replay = await api()
       .post('/api/auth/register/verify-otp')
       .send({ email: validPayload.email, otp });
 
@@ -92,7 +91,7 @@ describe('POST /api/auth/register/verify-otp', () => {
     const otp = await registerAndReadOtp();
     const wrongOtp = otp === '000000' ? '111111' : '000000';
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/register/verify-otp')
       .send({ email: validPayload.email, otp: wrongOtp });
 
@@ -107,7 +106,7 @@ describe('POST /api/auth/register/verify-otp', () => {
       { otpExpiresAt: new Date(Date.now() - 1000) }
     );
 
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/register/verify-otp')
       .send({ email: validPayload.email, otp });
 
@@ -116,7 +115,7 @@ describe('POST /api/auth/register/verify-otp', () => {
   });
 
   it('rejects an unknown email without leaking that it is unknown', async () => {
-    const response = await request(app)
+    const response = await api()
       .post('/api/auth/register/verify-otp')
       .send({ email: 'ghost@example.com', otp: '123456' });
 

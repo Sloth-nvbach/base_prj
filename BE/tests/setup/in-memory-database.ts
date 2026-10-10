@@ -8,8 +8,21 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
  */
 let mongoServer: MongoMemoryServer;
 
+/**
+ * The free port picked for mongod can be taken by another process (parallel test
+ * files, local apps) before mongod binds it. Retry with a new port in that case.
+ */
+const createServer = async (attempts = 3): Promise<MongoMemoryServer> => {
+  try {
+    return await MongoMemoryServer.create({ instance: { ip: '127.0.0.1' } });
+  } catch (error) {
+    if (attempts > 1 && /already in use/i.test(String(error))) return createServer(attempts - 1);
+    throw error;
+  }
+};
+
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await createServer();
   await mongoose.connect(mongoServer.getUri(), { dbName: 'test' });
 });
 

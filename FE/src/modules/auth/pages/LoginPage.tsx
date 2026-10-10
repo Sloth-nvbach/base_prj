@@ -35,9 +35,8 @@ export const LoginPage = () => {
     setLoading(true);
     try {
       const response = await authApi.login({ email: values.email, password: values.password });
-      const token = response.data?.token as string | undefined;
-      if (token) {
-        tokenStore.set(token);
+      if ('token' in response) {
+        tokenStore.set(response.token);
         toast.success('Logged in successfully.');
         navigate('/');
         return;
@@ -65,7 +64,7 @@ export const LoginPage = () => {
     setLoading(true);
     try {
       const response = await authApi.verifyLoginOtp(email, otp);
-      tokenStore.set(response.data.token);
+      tokenStore.set(response.token);
       toast.success('Logged in successfully.');
       navigate('/');
     } catch (error) {
@@ -133,7 +132,7 @@ export const LoginPage = () => {
 
           <Button className="w-full" type="submit" disabled={loading}>
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Continue to OTP
+            Sign in
           </Button>
         </form>
       </CardContent>

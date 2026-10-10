@@ -10,6 +10,13 @@ vi.mock('@/modules/profile/api/profile.api', () => ({
   profileApi: { uploadAvatar: (file: File) => uploadAvatar(file) },
 }));
 
+// Radix AvatarImage only mounts <img> after the browser loads it, which never happens in jsdom.
+vi.mock('@/shared/components/ui/avatar', () => ({
+  Avatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => (src ? <img src={src} alt={alt} /> : null),
+  AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     error: (message: string) => toastError(message),
@@ -32,7 +39,7 @@ const selectFile = (input: HTMLInputElement, file: File) =>
   fireEvent.change(input, { target: { files: [file] } });
 
 beforeEach(() => {
-  uploadAvatar.mockReset().mockResolvedValue({ data: { avatarUrl: NEW_URL } });
+  uploadAvatar.mockReset().mockResolvedValue({ avatarUrl: NEW_URL });
   toastError.mockReset();
   toastSuccess.mockReset();
 });
@@ -117,5 +124,13 @@ describe('AvatarUpload', () => {
 
     resolveUpload?.({ data: { avatarUrl: NEW_URL } });
     await waitFor(() => expect(trigger).not.toBeDisabled());
+  });
+
+  it('shows the avatar URL that arrives after the first render', () => {
+    const { rerender } = render(<AvatarUpload onUploadSuccess={vi.fn()} />);
+    expect(screen.queryByAltText('Profile avatar')).not.toBeInTheDocument();
+
+    rerender(<AvatarUpload currentAvatarUrl={NEW_URL} onUploadSuccess={vi.fn()} />);
+    expect(screen.getByAltText('Profile avatar')).toHaveAttribute('src', NEW_URL);
   });
 });

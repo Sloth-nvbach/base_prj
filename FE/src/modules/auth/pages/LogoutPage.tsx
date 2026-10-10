@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { tokenStore } from '../store/token.store';
+import { useLogout } from '../hooks/use-current-user';
 
-/** Clears auth token and redirects to login page */
+/** Signs out (token and cached data) and redirects to the login page. */
 export const LogoutPage = () => {
-  const navigate = useNavigate();
+  const logout = useLogout();
 
   useEffect(() => {
-    tokenStore.clear();
-    navigate('/login', { replace: true });
-  }, [navigate]);
+    logout();
+  }, [logout]);
 
   return null;
 };
