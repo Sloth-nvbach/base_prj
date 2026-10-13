@@ -81,7 +81,7 @@ export const LoginPage = () => {
         <CardHeader className="text-center">
           <CardTitle>Verify OTP</CardTitle>
           <CardDescription>
-            Enter the 6-digit code sent to <span className="font-medium text-foreground">{email}</span>
+            Enter the 6-digit code sent to : <span className="font-medium text-foreground">{email}</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
