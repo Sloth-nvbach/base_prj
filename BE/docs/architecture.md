@@ -73,7 +73,7 @@ All variables are parsed by one Zod schema; startup fails with a list of every i
 ### 2. Routes → middleware chain
 
 ```ts
-noteRouter.use(authGuard, requireRole('user', 'admin'));          // all routes: signed in, role loaded
+noteRouter.use(authGuard, requireRole('user', 'teacher', 'admin'));  // all routes: signed in, role loaded
 noteRouter.get('/', validate({ query: listNotesQuerySchema }), listNotes);
 noteRouter.patch('/:id', validate({ params: idParamsSchema, body: updateNoteSchema }), updateNote);
 profileRouter.post('/avatar', authGuard, imageUpload.single('avatar'), uploadAvatar);

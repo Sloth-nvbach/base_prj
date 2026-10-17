@@ -3,7 +3,7 @@ export interface AuthPayload {
   password: string;
 }
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'teacher' | 'admin';
 
 export interface CurrentUser {
   _id: string;

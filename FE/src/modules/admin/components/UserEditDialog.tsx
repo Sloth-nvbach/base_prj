@@ -15,7 +15,7 @@ import { useUpdateUser } from '../hooks/use-admin';
 const schema = z.object({
   displayName: z.string().trim().min(1, 'Name is required').max(100, 'Max 100 characters'),
   // A disabled select (own account) submits no value, so the role is then left unchanged.
-  role: z.enum(['user', 'admin']).optional(),
+  role: z.enum(['user', 'teacher', 'admin']).optional(),
   isEmailVerified: z.boolean(),
   loginOtpEnabled: z.boolean(),
 });
@@ -65,6 +65,7 @@ export const UserEditDialog = ({ user, isSelf, onClose }: UserEditDialogProps) =
           <FormField id="user-role" label="Role" hint={isSelf ? 'You cannot change your own role' : undefined}>
             <select id="user-role" className={selectClass} disabled={isSelf} {...register('role')}>
               <option value="user">User</option>
+              <option value="teacher">Teacher</option>
               <option value="admin">Admin</option>
             </select>
           </FormField>

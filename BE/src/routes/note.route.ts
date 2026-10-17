@@ -10,7 +10,7 @@ import { createNoteSchema, listNotesQuerySchema, updateNoteSchema } from '../val
 export const noteRouter = Router();
 
 // Every note endpoint needs a signed-in user; `requireRole` also loads the role.
-noteRouter.use(authGuard, requireRole('user', 'admin'));
+noteRouter.use(authGuard, requireRole('user', 'teacher', 'admin'));
 
 noteRouter.get('/', validate({ query: listNotesQuerySchema }), listNotes);
 noteRouter.get('/:id', validate({ params: idParamsSchema }), getNote);

@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
-export const USER_ROLES = ['user', 'admin'] as const;
+/** Account roles: 'user' is a student, 'teacher' is a lecturer, 'admin' manages everything. */
+export const USER_ROLES = ['user', 'teacher', 'admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 export interface UserDocument extends mongoose.Document {
