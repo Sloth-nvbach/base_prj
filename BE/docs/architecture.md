@@ -47,7 +47,7 @@ src/
 ├── app.ts               # helmet, cors, json, morgan, rate limits, routers, 404, error handler
 ├── server.ts            # connectDb() → listen; graceful shutdown on SIGINT/SIGTERM
 ├── config/              # env.ts (Zod-validated), db.ts, cloudinary.ts (isCloudinaryConfigured)
-├── models/              # user.model.ts, note.model.ts
+├── models/              # user.model.ts, note.model.ts, assignment.model.ts, submission.model.ts
 ├── validators/          # common.validator.ts (idParamsSchema, objectIdSchema, booleanQuerySchema), <name>.validator.ts
 ├── services/            # <name>.service.ts, email.service.ts, cloudinary.service.ts
 ├── controllers/         # <name>.controller.ts
@@ -120,6 +120,8 @@ Throw `badRequest`, `unauthorized`, `forbidden`, `notFound`, `conflict` or `new 
 
 ### 9. Models
 `<Name>Document` interface + `Schema`, `{ timestamps: true }`, DB constraints (`required`, `maxlength`, `enum`), indexes for the default list query, and a `toJSON` transform that removes `__v` and any private field. The User model strips `password`, `otpCode`, `otpExpiresAt`, `resetToken`, `resetTokenExpiresAt` in `toJSON`, so returning a user **document** is safe. `.lean()` and `aggregate()` return plain objects that skip `toJSON`: with those, `.select()` / `$project` the public fields explicitly.
+
+Smart EdTech exercise data: `assignment.model.ts` (`title`, `description`, `instructions`, `createdBy` → User, optional `dueDate`, `maxScore` ≥ 0 default 100, status `draft|published|closed`) collects `submission.model.ts` documents (`assignment` → Assignment, `student` → User, `code`, `language` enum, `submittedAt`, status `submitted|graded`, teacher-confirmed `score` ≥ 0, `feedback`). Submissions are **not** unique per (assignment, student) — the history is kept; `score` is never an AI suggestion, and the `score <= maxScore` rule belongs to the (future) grading service, not the schema.
 
 ### 10. External services
 - Email: `sendEmail(to, subject, html)`. Without `SMTP_HOST`, mail goes to nodemailer's JSON transport and is printed to the console in development; in production it throws `AppError(503)` so codes never reach the logs.
