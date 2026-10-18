@@ -10,6 +10,7 @@ import { hashPassword } from '../utils/hash';
 
 export const DEMO_ACCOUNTS = [
   { email: 'demo@example.com', password: 'demo1234', displayName: 'Demo User', role: 'user' },
+  { email: 'teacher@example.com', password: 'teacher1234', displayName: 'Demo Teacher', role: 'teacher' },
   { email: 'admin@example.com', password: 'admin1234', displayName: 'Demo Admin', role: 'admin' }
 ] as const;
 
