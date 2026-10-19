@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from 'express';
-import { createAssignment, deleteAssignment, getAssignment, listAssignments, updateAssignment } from '../controllers/assignment.controller';
+import { createAssignment, deleteAssignment, getAssignment, getSubmissionAccess, listAssignments, updateAssignment } from '../controllers/assignment.controller';
 import { authGuard } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
@@ -16,6 +16,8 @@ const write: RequestHandler[] = [authGuard, requireRole('teacher', 'admin')];
 
 assignmentRouter.get('/', ...read, validate({ query: listAssignmentsQuerySchema }), listAssignments);
 assignmentRouter.get('/:id', ...read, validate({ params: idParamsSchema }), getAssignment);
+// DSE-19: whether the current user may submit to this assignment right now.
+assignmentRouter.get('/:id/submission-access', ...read, validate({ params: idParamsSchema }), getSubmissionAccess);
 assignmentRouter.post('/', ...write, validate({ body: createAssignmentSchema }), createAssignment);
 assignmentRouter.patch('/:id', ...write, validate({ params: idParamsSchema, body: updateAssignmentSchema }), updateAssignment);
 assignmentRouter.delete('/:id', ...write, validate({ params: idParamsSchema }), deleteAssignment);

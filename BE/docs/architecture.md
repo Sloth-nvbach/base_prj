@@ -125,6 +125,8 @@ Smart EdTech exercise data: `assignment.model.ts` (`title`, `description`, `inst
 
 Assignment access rules (`/api/assignments`, see `assignment.service.ts`): teachers and admins create, edit and delete — teachers only their own (another teacher's assignment answers 404), admins any. Every signed-in role may read: students see all non-draft assignments (published and closed, from any teacher), teachers their own (drafts included), admins everything. Drafts are hidden behind 404s, never 403s, so their existence is not revealed.
 
+Submission API (`/api/submissions`, rules in `submission.service.ts`): only students (`role: 'user'`) submit — any number of times, the history is kept; `GET /api/submissions?assignment=<id>` returns the caller's own submissions only. `GET /api/assignments/:id/submission-access` answers `{ canSubmit, reason? }` for the current user: drafts answer 404, closed or past-deadline assignments answer `canSubmit: false` with the reason. The same rules block `POST /api/submissions` (403), so clients cannot bypass them.
+
 ### 10. External services
 - Email: `sendEmail(to, subject, html)`. Without `SMTP_HOST`, mail goes to nodemailer's JSON transport and is printed to the console in development; in production it throws `AppError(503)` so codes never reach the logs.
 - AI: `generateChatReply(messages)` in `services/ai.service.ts` calls Google Gemini through `@google/genai` with the system prompt and thinking level (default `LOW`) from `config/chatbot.ts`; default model `gemini-3.5-flash-lite`. Without `GEMINI_API_KEY` it throws `AppError(503)`; Gemini 429 → 429, bad key/model → 503, other failures → 502. `POST /api/chat` adds `authGuard` and a per-user limit of 10 requests per minute.

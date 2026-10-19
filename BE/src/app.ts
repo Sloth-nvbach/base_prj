@@ -12,6 +12,7 @@ import { authRouter } from './routes/auth.route';
 import { chatRouter } from './routes/chat.route';
 import { noteRouter } from './routes/note.route';
 import { profileRouter } from './routes/profile.route';
+import { submissionRouter } from './routes/submission.route';
 
 export const app = express();
 
@@ -47,5 +48,6 @@ app.use('/api/chat', chatRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notes', noteRouter);
 app.use('/api/assignments', assignmentRouter);
+app.use('/api/submissions', submissionRouter);
 app.use(notFoundHandler);
 app.use(errorMiddleware);

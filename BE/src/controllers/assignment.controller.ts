@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as assignmentService from '../services/assignment.service';
+import * as submissionService from '../services/submission.service';
 import { CreateAssignmentInput, ListAssignmentsQuery, UpdateAssignmentInput } from '../validators/assignment.validator';
 
 // `authGuard` + `requireRole` run first, so `req.user` (with role) is always set here.
@@ -12,6 +13,10 @@ export const listAssignments = async (req: Request, res: Response) => {
 
 export const getAssignment = async (req: Request, res: Response) => {
   res.json(await assignmentService.getAssignment(actorOf(req), req.params.id as string));
+};
+
+export const getSubmissionAccess = async (req: Request, res: Response) => {
+  res.json(await submissionService.checkSubmissionAccess(actorOf(req), req.params.id as string));
 };
 
 export const createAssignment = async (req: Request, res: Response) => {
