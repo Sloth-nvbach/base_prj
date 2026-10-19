@@ -41,6 +41,17 @@ export const createSubmission = async (actor: Actor, input: CreateSubmissionInpu
   return SubmissionModel.create({ ...input, student: actor.id });
 };
 
-/** The caller's own submissions only; other people's submissions answer nothing. */
-export const listSubmissions = (actor: Actor, { assignment, ...pagination }: ListSubmissionsQuery) =>
-  paginate(SubmissionModel, { student: actor.id, ...(assignment ? { assignment } : {}) }, pagination);
+/**
+ * The caller's own submissions only; other people's submissions answer nothing.
+ * DSE-18: each history row carries the assignment's public fields (title,
+ * status, maxScore, dueDate), so one call is enough to render the history.
+ * A deleted assignment shows as null — the student's own record is kept.
+ */
+export const listSubmissions = async (actor: Actor, { assignment, ...pagination }: ListSubmissionsQuery) => {
+  const page = await paginate(SubmissionModel, { student: actor.id, ...(assignment ? { assignment } : {}) }, pagination);
+  page.items = (await SubmissionModel.populate(page.items, {
+    path: 'assignment',
+    select: 'title status maxScore dueDate'
+  })) as typeof page.items;
+  return page;
+};

@@ -211,6 +211,41 @@ describe('GET /api/submissions (own history)', () => {
     expect(one.body.total).toBe(1);
   });
 
+  it('names the assignment in every history row, with public fields only', async () => {
+    const loops = await createAssignment({ title: 'Loops' });
+    const arrays = await createAssignment({ title: 'Arrays' });
+    const auth = bearerFor(await student());
+    await submit(auth, loops._id);
+    await submit(auth, arrays._id);
+
+    const response = await api().get('/api/submissions?sort=createdAt').set('Authorization', auth);
+
+    const titles = response.body.items.map((item: { assignment: { title: string } }) => item.assignment.title);
+    expect(titles).toEqual(['Loops', 'Arrays']);
+    for (const item of response.body.items) {
+      expect(item.assignment).not.toHaveProperty('description');
+      expect(item.assignment).not.toHaveProperty('instructions');
+      expect(item.assignment).not.toHaveProperty('__v');
+    }
+  });
+
+  it('still lists the history when the assignment was deleted, without its name', async () => {
+    const teacherUser = await teacher();
+    const teacherAuth = bearerFor(teacherUser);
+    const { body: assignment } = await api()
+      .post('/api/assignments')
+      .set('Authorization', teacherAuth)
+      .send({ title: 'Gone later', status: 'published' });
+    const auth = bearerFor(await student());
+    await submit(auth, assignment._id);
+
+    expect((await api().delete(`/api/assignments/${assignment._id}`).set('Authorization', teacherAuth)).status).toBe(204);
+
+    const response = await api().get('/api/submissions').set('Authorization', auth);
+    expect(response.body.total).toBe(1);
+    expect(response.body.items[0].assignment).toBeNull();
+  });
+
   it('never shows other students their submissions', async () => {
     const assignment = await createAssignment();
     await submit(bearerFor(await student()), assignment._id);
