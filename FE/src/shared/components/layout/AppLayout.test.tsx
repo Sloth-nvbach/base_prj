@@ -29,7 +29,7 @@ beforeEach(() => {
 
 describe('AppLayout', () => {
   it('hides links meant for other roles', async () => {
-    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'user' });
+    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'student' });
     renderLayout();
 
     // The avatar fallback shows the user's initials once the user has loaded.
@@ -55,14 +55,14 @@ describe('AppLayout', () => {
   });
 
   it('renders the widgets registered by modules', async () => {
-    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'user' });
+    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'student' });
     const FloatingThing = () => <div>floating widget</div>;
     renderWithProviders(<AppLayout navItems={navItems} widgets={[FloatingThing]} />, { route: '/' });
     expect(await screen.findByText('floating widget')).toBeInTheDocument();
   });
 
   it('logs out from the header button', async () => {
-    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'user' });
+    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'student' });
     renderLayout();
 
     fireEvent.click(await screen.findByRole('button', { name: /logout/i }));

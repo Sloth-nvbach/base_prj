@@ -18,7 +18,7 @@ import type { AdminUserListParams } from '../types/admin.types';
 const PAGE_SIZE = 10;
 
 const ROLE_OPTIONS = [
-  { value: 'user', label: 'User' },
+  { value: 'student', label: 'Student' },
   { value: 'admin', label: 'Admin' },
 ];
 

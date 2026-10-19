@@ -11,7 +11,7 @@ export const assignmentRouter = Router();
 // Reading (list, detail) is open to every signed-in role: students see what
 // has been published, teachers see their own drafts. Writing (create, edit,
 // delete) is for teachers and admins only.
-const read: RequestHandler[] = [authGuard, requireRole('user', 'teacher', 'admin')];
+const read: RequestHandler[] = [authGuard, requireRole('student', 'teacher', 'admin')];
 const write: RequestHandler[] = [authGuard, requireRole('teacher', 'admin')];
 
 assignmentRouter.get('/', ...read, validate({ query: listAssignmentsQuerySchema }), listAssignments);

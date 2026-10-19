@@ -17,7 +17,7 @@ vi.mock('sonner', () => ({
 const profile = {
   _id: 'user-1',
   email: 'alice@example.com',
-  role: 'user',
+  role: 'student',
   loginOtpEnabled: false,
   displayName: 'Alice',
   bio: 'Hello',

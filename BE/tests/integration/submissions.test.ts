@@ -12,8 +12,8 @@ let sequence = 0;
 const uniqueEmail = (prefix: string) => `${prefix}${(sequence += 1)}@example.com`;
 
 const teacher = () => createUser({ email: uniqueEmail('teacher'), role: 'teacher' });
-const student = () => createUser({ email: uniqueEmail('student'), role: 'user' });
-const otherStudent = () => createUser({ email: uniqueEmail('student'), role: 'user' });
+const student = () => createUser({ email: uniqueEmail('student'), role: 'student' });
+const otherStudent = () => createUser({ email: uniqueEmail('student'), role: 'student' });
 const admin = () => createUser({ email: uniqueEmail('admin'), role: 'admin' });
 
 /** Creates an assignment through the API, published unless the body says otherwise. */

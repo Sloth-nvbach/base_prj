@@ -14,7 +14,7 @@ let assignment: AssignmentDocument;
 
 beforeEach(async () => {
   teacher = await createUser({ email: 'teacher@example.com', role: 'teacher' });
-  student = await createUser({ email: 'student@example.com', role: 'user' });
+  student = await createUser({ email: 'student@example.com', role: 'student' });
   assignment = await AssignmentModel.create({ title: 'Loop exercises', createdBy: teacher._id });
 });
 

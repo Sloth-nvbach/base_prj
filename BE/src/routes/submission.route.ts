@@ -9,8 +9,8 @@ export const submissionRouter = Router();
 
 // Only students submit. Every signed-in role may read its own submission
 // history (teachers and admins simply have none).
-const read: RequestHandler[] = [authGuard, requireRole('user', 'teacher', 'admin')];
-const write: RequestHandler[] = [authGuard, requireRole('user')];
+const read: RequestHandler[] = [authGuard, requireRole('student', 'teacher', 'admin')];
+const write: RequestHandler[] = [authGuard, requireRole('student')];
 
 submissionRouter.get('/', ...read, validate({ query: listSubmissionsQuerySchema }), listSubmissions);
 submissionRouter.post('/', ...write, validate({ body: createSubmissionSchema }), createSubmission);

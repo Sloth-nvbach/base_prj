@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
-/** Account roles: 'user' is a student, 'teacher' is a lecturer, 'admin' manages everything. */
-export const USER_ROLES = ['user', 'teacher', 'admin'] as const;
+/** Account roles: 'student' is a regular account, 'teacher' is a lecturer, 'admin' manages everything. */
+export const USER_ROLES = ['student', 'teacher', 'admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 export interface UserDocument extends mongoose.Document {
@@ -37,7 +37,7 @@ const userSchema = new Schema<UserDocument>(
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String, required: true },
     isEmailVerified: { type: Boolean, default: false },
-    role: { type: String, enum: USER_ROLES, default: 'user' },
+    role: { type: String, enum: USER_ROLES, default: 'student' },
     loginOtpEnabled: { type: Boolean, default: false },
     otpCode: { type: String },
     otpExpiresAt: { type: Date },

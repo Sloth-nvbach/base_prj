@@ -28,7 +28,7 @@ const user = (id: string, email: string, extra = {}) => ({
   _id: id,
   email,
   displayName: email.split('@')[0],
-  role: 'user',
+  role: 'student',
   isEmailVerified: true,
   loginOtpEnabled: false,
   createdAt: '2026-10-01T00:00:00.000Z',
@@ -147,7 +147,7 @@ describe('AdminUsersPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(updateUser).toHaveBeenCalled());
-    expect(updateUser.mock.calls[0][1]).not.toHaveProperty('role', 'user');
+    expect(updateUser.mock.calls[0][1]).not.toHaveProperty('role', 'student');
     expect(updateUser.mock.calls[0][1]).toMatchObject({ displayName: 'Boss' });
   });
 

@@ -31,7 +31,7 @@ describe('ProtectedRoute with roles', () => {
   });
 
   it('sends other roles to the home page', async () => {
-    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'user' });
+    getMe.mockResolvedValue({ _id: '1', email: 'a@b.com', role: 'student' });
     renderAdminPage();
     expect(await screen.findByText('home page')).toBeInTheDocument();
     expect(screen.queryByText('admin content')).not.toBeInTheDocument();

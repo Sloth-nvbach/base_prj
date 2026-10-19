@@ -25,7 +25,7 @@ describe('admin access', () => {
     const user = await createUser({ role: 'admin' });
     const auth = bearerFor(user);
     expect((await api().delete(`/api/admin/users/${user._id}`).set('Authorization', auth)).status).toBe(400);
-    expect((await api().patch(`/api/admin/users/${user._id}`).set('Authorization', auth).send({ role: 'user' })).status).toBe(403);
+    expect((await api().patch(`/api/admin/users/${user._id}`).set('Authorization', auth).send({ role: 'student' })).status).toBe(403);
   });
 });
 
@@ -104,7 +104,7 @@ describe('PATCH /api/admin/users/:id', () => {
   it('does not let an admin remove their own admin role', async () => {
     const { admin, auth } = await signInAdmin();
 
-    const response = await api().patch(`/api/admin/users/${admin._id}`).set('Authorization', auth).send({ role: 'user' });
+    const response = await api().patch(`/api/admin/users/${admin._id}`).set('Authorization', auth).send({ role: 'student' });
 
     expect(response.status).toBe(403);
     expect((await UserModel.findById(admin._id))?.role).toBe('admin');
@@ -113,7 +113,7 @@ describe('PATCH /api/admin/users/:id', () => {
   it('answers 404 for an unknown user and 400 for an empty update', async () => {
     const { auth } = await signInAdmin();
     const missing = '0123456789abcdef01234567';
-    expect((await api().patch(`/api/admin/users/${missing}`).set('Authorization', auth).send({ role: 'user' })).status).toBe(404);
+    expect((await api().patch(`/api/admin/users/${missing}`).set('Authorization', auth).send({ role: 'student' })).status).toBe(404);
     const user = await createUser({ email: 'lan@example.com' });
     expect((await api().patch(`/api/admin/users/${user._id}`).set('Authorization', auth).send({})).status).toBe(400);
   });

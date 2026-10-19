@@ -9,7 +9,7 @@ import { UserModel } from '../models/user.model';
 import { hashPassword } from '../utils/hash';
 
 export const DEMO_ACCOUNTS = [
-  { email: 'demo@example.com', password: 'demo1234', displayName: 'Demo User', role: 'user' },
+  { email: 'demo@example.com', password: 'demo1234', displayName: 'Demo User', role: 'student' },
   { email: 'teacher@example.com', password: 'teacher1234', displayName: 'Demo Teacher', role: 'teacher' },
   { email: 'admin@example.com', password: 'admin1234', displayName: 'Demo Admin', role: 'admin' }
 ] as const;
@@ -21,7 +21,7 @@ export const DEMO_STUDENTS = Array.from({ length: 12 }, (_, index) => {
     email: `student${number}@example.com`,
     password: 'student1234',
     displayName: `Student ${number}`,
-    role: 'user',
+    role: 'student',
     // A few unverified accounts make the "verified" filter visible in the demo.
     isEmailVerified: index % 4 !== 3
   } as const;

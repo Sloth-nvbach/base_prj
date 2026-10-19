@@ -7,7 +7,7 @@ import { bearerFor, createUser } from '../helpers/user-factory';
 
 const teacher = () => createUser({ email: 'teacher@example.com', role: 'teacher' });
 const otherTeacher = () => createUser({ email: 'teacher2@example.com', role: 'teacher' });
-const student = () => createUser({ email: 'student@example.com', role: 'user' });
+const student = () => createUser({ email: 'student@example.com', role: 'student' });
 const admin = () => createUser({ email: 'admin@example.com', role: 'admin' });
 
 const createAssignment = (authorization: string, body: Record<string, unknown> = {}) =>

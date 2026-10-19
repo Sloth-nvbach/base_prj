@@ -18,7 +18,7 @@ vi.mock('../api/notes.api', () => ({
 }));
 
 vi.mock('@/modules/auth/api/auth.api', () => ({
-  authApi: { getMe: () => Promise.resolve({ _id: 'u1', email: 'a@b.com', role: 'user' }) },
+  authApi: { getMe: () => Promise.resolve({ _id: 'u1', email: 'a@b.com', role: 'student' }) },
 }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));

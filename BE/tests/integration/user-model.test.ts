@@ -28,10 +28,10 @@ describe('User model', () => {
   });
 
   describe('role', () => {
-    it('defaults to user (student account)', async () => {
+    it('defaults to student (regular account)', async () => {
       const user = await createUser();
 
-      expect(user.role).toBe('user');
+      expect(user.role).toBe('student');
     });
 
     it('accepts the teacher and admin roles', async () => {
@@ -43,7 +43,7 @@ describe('User model', () => {
     });
 
     it('rejects a role outside the allowed list', async () => {
-      await expect(createUser({ role: 'student' })).rejects.toMatchObject({ name: 'ValidationError' });
+      await expect(createUser({ role: 'superadmin' })).rejects.toMatchObject({ name: 'ValidationError' });
     });
   });
 
@@ -74,7 +74,7 @@ describe('User model', () => {
     const json = user.toJSON() as Record<string, unknown>;
 
     expect(json.email).toBe('student@example.com');
-    expect(json.role).toBe('user');
+    expect(json.role).toBe('student');
     for (const field of ['password', 'otpCode', 'otpExpiresAt', 'resetToken', 'resetTokenExpiresAt', '__v']) {
       expect(json).not.toHaveProperty(field);
     }

@@ -4,13 +4,13 @@ import { forbidden, notFound } from '../utils/app-error';
 import { paginate } from '../utils/pagination';
 import { CreateSubmissionInput, ListSubmissionsQuery } from '../validators/submission.validator';
 
-/** Who is making the request. Only students (role 'user') may submit. */
+/** Who is making the request. Only students (role 'student') may submit. */
 export interface Actor {
   id: string;
   role?: string;
 }
 
-const isStudent = (actor: Actor) => actor.role === 'user';
+const isStudent = (actor: Actor) => actor.role === 'student';
 
 export type SubmissionAccess = { canSubmit: true } | { canSubmit: false; reason: string };
 
