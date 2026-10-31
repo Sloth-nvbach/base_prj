@@ -4,7 +4,7 @@
 - Jira ID: DSE-12
 - Project / Sprint: DSE / Sprint 3: Auth Hardening
 - Ngày thực hiện: 2026-10-31
-- Trạng thái: IN PROGRESS
+- Trạng thái: DONE
 - Repository / Branch: base_prj / main
 
 ## 2. Mục tiêu và Acceptance Criteria
@@ -73,15 +73,15 @@ Các thay đổi, quyết định kỹ thuật và kết quả theo từng phiê
 ## 8. Jira
 - Trạng thái trước/sau (nếu đã xác minh): In Progress / DONE
 - Thao tác đề xuất: Cập nhật status sang Done
-- Thao tác đã được duyệt và thực hiện: Đọc issue, triển khai code, chạy test
-- Việc còn chờ: Commit, push, cập nhật Jira status
+- Thao tác đã được duyệt và thực hiện: Đọc issue, triển khai code, chạy test, commit, push
+- Việc còn chờ: Cập nhật Jira status (cần duyệt qua MCP)
 
 ## 9. GitHub
 - Repository / Branch: base_prj / main
-- Commit Status: NOT CREATED
-- Commit Hash / URL: 
+- Commit Status: PUSHED
+- Commit Hash / URL: 6193b7c1fda17973d1a1032edb1f79e47b65d243 / https://github.com/Sloth-nvbach/base_prj/commit/6193b7c1fda17973d1a1032edb1f79e47b65d243
 - Commit Message: feat: restrict admin area to admin users only (DSE-12)
-- Kết quả push: 
+- Kết quả push: SUCCESS 
 
 ## 10. Blockers và việc còn tồn đọng
 - Không còn blocker nào
@@ -98,3 +98,4 @@ Các thay đổi, quyết định kỹ thuật và kết quả theo từng phiê
 | 2026-10-31 | Triển khai backend | Sửa admin.route.ts, cập nhật admin.test.ts | DONE |
 | 2026-10-31 | Triển khai frontend | Sửa App.tsx, sửa admin.module.ts | DONE |
 | 2026-10-31 | Kiểm thử và build | npm test, npm run lint, npm run build - tất cả PASS | DONE |
+| 2026-10-31 | Commit & Push | Tạo commit 6193b7c, push lên origin/main | DONE |
