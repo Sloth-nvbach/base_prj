@@ -33,9 +33,8 @@ function App() {
       </Route>
 
       {/* Admin area — sidebar layout; pages come from `adminRoutes` of each module.
-          Base project: every signed-in account may open it. To allow admins only, use
-          <ProtectedRoute roles={['admin']}> here and requireRole('admin') in BE/src/routes/admin.route.ts. */}
-      <Route element={<ProtectedRoute><AdminLayout navItems={adminNavItems} /></ProtectedRoute>}>
+          Restricted to admins only (DSE-12). */}
+      <Route element={<ProtectedRoute roles={['admin']}><AdminLayout navItems={adminNavItems} /></ProtectedRoute>}>
         {adminRoutes.map(({ path, Component }) => (
           <Route key={path} path={path} element={<Component />} />
         ))}

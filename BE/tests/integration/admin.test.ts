@@ -13,12 +13,15 @@ const signInAdmin = async () => {
 };
 
 describe('admin access', () => {
-  // Base project default: any signed-in account may use the admin API (see admin.route.ts).
-  it('is open to every signed-in account and closed to anonymous visitors', async () => {
-    const user = await createUser({});
-    expect((await api().get('/api/admin/users').set('Authorization', bearerFor(user))).status).toBe(200);
-    expect((await api().get('/api/admin/stats').set('Authorization', bearerFor(user))).status).toBe(200);
+  // Admin routes now require admin role (DSE-12).
+  it('is restricted to admins and closed to anonymous visitors and non-admins', async () => {
+    const user = await createUser({ email: 'student@example.com' });
+    const admin = await createUser({ email: 'admin@example.com', role: 'admin' });
+    expect((await api().get('/api/admin/users').set('Authorization', bearerFor(user))).status).toBe(403);
+    expect((await api().get('/api/admin/stats').set('Authorization', bearerFor(user))).status).toBe(403);
     expect((await api().get('/api/admin/users')).status).toBe(401);
+    expect((await api().get('/api/admin/users').set('Authorization', bearerFor(admin))).status).toBe(200);
+    expect((await api().get('/api/admin/stats').set('Authorization', bearerFor(admin))).status).toBe(200);
   });
 
   it('still protects the signed-in account from deleting or demoting itself', async () => {
