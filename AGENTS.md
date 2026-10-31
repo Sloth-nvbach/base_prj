@@ -144,3 +144,9 @@ A sample chat bot to customize, not a finished product:
 
 Run `npm test`, `npm run lint` and `npm run build` from the root and fix every failure. Update the docs if a rule or a
 shared helper changed (golden rule 7). Mention any step you could not run.
+
+## Atlassian MCP
+When connected to Atlassian-Rovo-MCP:
+- MUST use Jira project key = DSE
+- MUST use cloudId = "https://nvb3117.atlassian.net" (do NOT call getAccessibleAtlassianResources)
+- MUST use maxResults: 10 for ALL Jira JQL searches.
