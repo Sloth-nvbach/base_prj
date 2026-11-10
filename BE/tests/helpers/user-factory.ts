@@ -4,6 +4,8 @@ import { signToken } from '../../src/utils/jwt';
 
 export const DEFAULT_PASSWORD = 'Passw0rd!';
 
+let userCounter = 0;
+
 interface UserOverrides {
   email?: string;
   password?: string;
@@ -16,7 +18,7 @@ interface UserOverrides {
 
 /** Creates a persisted user; verified by default so login tests can proceed. */
 export const createUser = async (overrides: UserOverrides = {}) => {
-  const email = overrides.email ?? 'user@example.com';
+  const email = overrides.email ?? `user${++userCounter}@example.com`;
   return UserModel.create({
     email,
     password: await hashPassword(overrides.password ?? DEFAULT_PASSWORD),
@@ -42,3 +44,11 @@ export const readSecrets = async (email: string) => {
     resetTokenExpiresAt: user?.resetTokenExpiresAt
   };
 };
+
+/** Creates a user with a specific role, generating a unique email each time. */
+export const createUserWithRole = (role: UserRole) => createUser({ role });
+
+/** Helper factories for common roles. */
+export const teacher = () => createUserWithRole('teacher');
+export const student = () => createUserWithRole('student');
+export const admin = () => createUserWithRole('admin');

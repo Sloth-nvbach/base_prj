@@ -65,14 +65,14 @@ Each app also has its own scripts (`cd BE && npm run dev`, `cd FE && npm run tes
 ## Project layout
 
 ```
-AGENTS.md                  conventions for AI agents (CLAUDE.md imports it)
+AGENTS.md                  conventions for AI agents (single source of truth)
 .agents/workflows/         Antigravity workflows: /new-module, /check
 docs/vibe-coding-guide.md  student guide (Vietnamese)
 scripts/                   setup and module generator
 BE/src/                    config, models, validators, services, controllers, routes, middlewares, utils
 BE/tests/                  unit and integration tests
 FE/src/app/                module registry (routes + navigation)
-FE/src/modules/            one folder per feature: auth, home, notes, profile
+FE/src/modules/            one folder per feature: auth, home, notes, profile, chat, admin, demo
 FE/src/shared/             http client, query client, shared components and hooks
 ```
 

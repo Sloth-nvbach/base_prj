@@ -10,9 +10,12 @@ import { adminRouter } from './routes/admin.route';
 import { assignmentRouter } from './routes/assignment.route';
 import { authRouter } from './routes/auth.route';
 import { chatRouter } from './routes/chat.route';
+import { courseRouter } from './routes/course.route';
 import { noteRouter } from './routes/note.route';
 import { profileRouter } from './routes/profile.route';
+import { rubricRouter } from './routes/rubric.route';
 import { submissionRouter } from './routes/submission.route';
+import { testcaseRouter } from './routes/testcase.route';
 
 export const app = express();
 
@@ -48,6 +51,9 @@ app.use('/api/chat', chatRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notes', noteRouter);
 app.use('/api/assignments', assignmentRouter);
+app.use('/api/rubrics', rubricRouter);
+app.use('/api/test-cases', testcaseRouter);
+app.use('/api', courseRouter);
 app.use('/api/submissions', submissionRouter);
 app.use(notFoundHandler);
 app.use(errorMiddleware);
