@@ -32,91 +32,98 @@
 }
 
 /* 
-  Catppuccin Mocha / Tokyo Night inspired theme
-  Dark mode as default (coding platform), eye-friendly for long sessions
-  Not pure black - reduces eye strain, good contrast ratios
+  Emerald/Teal theme - Modern, professional, eye-friendly for coding
+  Light mode as default, dark mode via .dark class
 */
 
-/* Dark theme (DEFAULT) - Catppuccin Mocha inspired */
+/* Light theme (DEFAULT) - Clean, modern emerald theme */
 :root {
-  /* Base colors - Catppuccin Mocha palette */
-  --background: hsl(230 20% 12%);        /* #1e1e2e - deep navy, not pure black */
-  --foreground: hsl(240 10% 85%);        /* #cdd6f4 - soft white */
-  --card: hsl(230 15% 10%);              /* #181825 - slightly lighter surface */
-  --card-foreground: hsl(240 10% 85%);   /* #cdd6f4 */
+  /* Base colors - Light emerald theme */
+  --background: hsl(0 0% 100%);              /* #ffffff - pure white */
+  --foreground: hsl(180 15% 15%);            /* #1a2e2e - dark teal */
+  --card: hsl(0 0% 100%);                    /* #ffffff */
+  --card-foreground: hsl(180 15% 15%);       /* #1a2e2e */
   
-  /* Primary - Catppuccin Lavender */
-  --primary: hsl(275 75% 70%);           /* #cba6f7 - lavender */
-  --primary-foreground: hsl(230 20% 12%); /* #1e1e2e */
+  /* Primary - Emerald/Teal */
+  --primary: hsl(165 75% 35%);               /* #0f766e - teal-700 */
+  --primary-foreground: hsl(0 0% 100%);      /* white */
   
-  /* Secondary - Catppuccin Surface */
-  --secondary: hsl(230 15% 15%);         /* #313244 - overlay */
-  --secondary-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  /* Secondary - Light teal */
+  --secondary: hsl(180 30% 94%);             /* #e0f2f1 - teal-50 */
+  --secondary-foreground: hsl(180 15% 15%);  /* #1a2e2e */
   
-  /* Muted - Catppuccin Overlay/Muted */
-  --muted: hsl(230 15% 18%);             /* #45475a - surface1 */
-  --muted-foreground: hsl(240 5% 55%);   /* #6c7086 - overlay1 (comments) */
+  /* Muted */
+  --muted: hsl(180 30% 94%);                 /* #e0f2f1 */
+  --muted-foreground: hsl(180 15% 45%);      /* #4a7c7a - teal-600 */
   
-  /* Accent - Catppuccin Pink */
-  --accent: hsl(325 75% 70%);            /* #f5c2e7 - pink */
-  --accent-foreground: hsl(230 20% 12%);  /* #1e1e2e */
+  /* Accent - Warm amber for highlights */
+  --accent: hsl(35 90% 55%);                 /* #f59e0b - amber-500 */
+  --accent-foreground: hsl(0 0% 100%);       /* white */
   
-  /* Destructive - Catppuccin Red */
-  --destructive: hsl(350 85% 65%);       /* #f38ba8 - red */
-  --destructive-foreground: hsl(230 20% 12%); /* #1e1e2e */
+  /* Destructive - Red */
+  --destructive: hsl(0 75% 55%);             /* #ef4444 - red-500 */
+  --destructive-foreground: hsl(0 0% 100%);  /* white */
   
   /* Borders & Inputs */
-  --border: hsl(230 15% 25%);            /* #585b70 - surface2 */
-  --input: hsl(230 15% 18%);             /* #45475a - surface1 */
-  --ring: hsl(275 75% 70%);              /* #cba6f7 - lavender */
+  --border: hsl(180 20% 85%);                /* #b2d8d8 - teal-200 */
+  --input: hsl(180 20% 92%);                 /* #d1e9e9 - teal-100 */
+  --ring: hsl(165 75% 35%);                  /* #0f766e - teal-700 */
   
   /* Popover */
-  --popover: hsl(230 15% 10%);           /* #181825 */
-  --popover-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(180 15% 15%);
   
   /* Sidebar (Admin layout) */
-  --sidebar: hsl(230 15% 8%);            /* #11111b - crust */
-  --sidebar-foreground: hsl(240 10% 85%); /* #cdd6f4 */
-  --sidebar-accent: hsl(230 15% 15%);    /* #313244 */
-  --sidebar-accent-foreground: hsl(240 10% 85%); /* #cdd6f4 */
-  --sidebar-border: hsl(230 15% 18%);    /* #45475a */
+  --sidebar: hsl(180 30% 97%);               /* #f0fdfa - teal-50 */
+  --sidebar-foreground: hsl(180 15% 15%);    /* #1a2e2e */
+  --sidebar-accent: hsl(180 30% 90%);        /* #ccfbf1 - teal-100 */
+  --sidebar-accent-foreground: hsl(180 15% 15%);
+  --sidebar-border: hsl(180 20% 85%);        /* #b2d8d8 */
 }
 
-/* Light theme (optional - softer for daytime) */
-.light {
-  /* Catppuccin Latte inspired light theme */
-  --background: hsl(220 30% 98%);        /* #eff1f5 - base */
-  --foreground: hsl(230 25% 15%);        /* #4c4f69 - text */
-  --card: hsl(0 0% 100%);                /* #ffffff */
-  --card-foreground: hsl(230 25% 15%);   /* #4c4f69 */
+/* Dark theme - Activated via .dark class on html element */
+.dark {
+  /* Base colors - Dark emerald theme */
+  --background: hsl(180 20% 8%);             /* #0d1b1b - very dark teal */
+  --foreground: hsl(180 20% 92%);            /* #e6f7f7 - very light teal */
+  --card: hsl(180 20% 10%);                  /* #0f2222 - dark teal card */
+  --card-foreground: hsl(180 20% 92%);       /* #e6f7f7 */
   
-  --primary: hsl(275 75% 55%);           /* #8839ef - lavender (darker for light bg) */
-  --primary-foreground: hsl(0 0% 100%);  /* white */
+  /* Primary - Bright emerald for dark mode */
+  --primary: hsl(165 85% 45%);               /* #14b8a6 - teal-500 */
+  --primary-foreground: hsl(180 20% 8%);     /* #0d1b1b */
   
-  --secondary: hsl(220 30% 90%);         /* #ccd0da - surface0 */
-  --secondary-foreground: hsl(230 25% 15%); /* #4c4f69 */
+  /* Secondary */
+  --secondary: hsl(180 15% 18%);             /* #1a3a3a - dark teal */
+  --secondary-foreground: hsl(180 20% 92%);  /* #e6f7f7 */
   
-  --muted: hsl(220 30% 92%);             /* #e6e9ef - surface1 */
-  --muted-foreground: hsl(230 15% 40%);  /* #7287fd - surface2 */
+  /* Muted */
+  --muted: hsl(180 15% 18%);                 /* #1a3a3a */
+  --muted-foreground: hsl(180 15% 60%);      /* #6aa9a9 - teal-400 */
   
-  --accent: hsl(325 75% 55%);            /* #d20f7a - pink (darker) */
-  --accent-foreground: hsl(0 0% 100%);   /* white */
+  /* Accent - Amber */
+  --accent: hsl(35 90% 55%);                 /* #f59e0b - amber-500 */
+  --accent-foreground: hsl(180 20% 8%);      /* #0d1b1b */
   
-  --destructive: hsl(350 75% 50%);       /* #d20f39 - red */
-  --destructive-foreground: hsl(0 0% 100%); /* white */
+  /* Destructive */
+  --destructive: hsl(0 70% 50%);             /* #dc2626 - red-600 */
+  --destructive-foreground: hsl(180 20% 92%);
   
-  --border: hsl(220 25% 85%);            /* #bcc0cc - surface1 */
-  --input: hsl(220 25% 88%);             /* #dce0e8 - surface0 */
-  --ring: hsl(275 75% 55%);              /* #8839ef */
+  /* Borders & Inputs */
+  --border: hsl(180 15% 25%);                /* #2a5a5a - teal-800 */
+  --input: hsl(180 15% 15%);                 /* #1a3333 - teal-900 */
+  --ring: hsl(165 85% 45%);                  /* #14b8a6 - teal-500 */
   
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(230 25% 15%);
+  /* Popover */
+  --popover: hsl(180 20% 10%);
+  --popover-foreground: hsl(180 20% 92%);
   
-  --sidebar: hsl(220 30% 96%);
-  --sidebar-foreground: hsl(230 25% 15%);
-  --sidebar-accent: hsl(220 25% 88%);
-  --sidebar-accent-foreground: hsl(230 25% 15%);
-  --sidebar-border: hsl(220 25% 85%);
+  /* Sidebar */
+  --sidebar: hsl(180 20% 6%);                /* #0a1818 - very dark */
+  --sidebar-foreground: hsl(180 20% 92%);
+  --sidebar-accent: hsl(180 15% 15%);
+  --sidebar-accent-foreground: hsl(180 20% 92%);
+  --sidebar-border: hsl(180 15% 20%);
 }
 
 /* Scrollbar styling - consistent across themes */
@@ -162,4 +169,9 @@ body {
 ::selection {
   background: var(--color-primary);
   color: var(--color-primary-foreground);
+}
+
+/* Smooth theme transition */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

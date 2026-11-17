@@ -61,7 +61,6 @@ Giảng viên thiết lập bộ kiểm thử cho bài tập.
 | FE/src/shared/components/ui/progress.tsx | CREATE | Progress bar UI component |
 | FE/src/shared/components/ui/checkbox.tsx | CREATE | Checkbox UI component |
 | FE/src/shared/components/ui/card.tsx | EDIT | Added CardFooter component |
-| FE/src/shared/components/ui/tabs.tsx | CREATE | Tabs UI component |
 | FE/src/modules/testcase/components/TestCaseTable.tsx | CREATE | UI component for test case management |
 | FE/src/modules/testcase/hooks/use-testcases.ts | CREATE | TanStack Query hooks for test cases |
 | FE/src/modules/testcase/api/testcase.api.ts | CREATE | API functions for test case CRUD, import/export |
@@ -92,10 +91,10 @@ Giảng viên thiết lập bộ kiểm thử cho bài tập.
 
 ## 9. GitHub
 - Repository / Branch: base_prj / main
-- Commit Status: COMMITTED
-- Commit Hash / URL: [to be filled after commit]
+- Commit Status: COMMITTED & PUSHED
+- Commit Hash / URL: 3b6d1a5 / https://github.com/Sloth-nvbach/base_prj/commit/3b6d1a5
 - Commit Message: feat: implement DSE-21 test case management + DSE-52 rubric builder + theme & auth UI improvements
-- Push result: [to be filled after push]
+- Push result: SUCCESS
 
 ## 10. Blockers & Remaining Work
 - Preview run sample code feature requires code execution sandbox (not implemented)

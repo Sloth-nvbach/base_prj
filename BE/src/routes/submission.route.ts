@@ -1,9 +1,10 @@
 import { Router, RequestHandler } from 'express';
-import { createSubmission, listSubmissions } from '../controllers/submission.controller';
+import { createSubmission, listSubmissions, runSubmission, getSubmissionRunResult } from '../controllers/submission.controller';
 import { authGuard } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { createSubmissionSchema, listSubmissionsQuerySchema } from '../validators/submission.validator';
+import { idParamsSchema } from '../validators/common.validator';
+import { createSubmissionSchema, listSubmissionsQuerySchema, runSubmissionSchema, getRunResultQuerySchema } from '../validators/submission.validator';
 
 export const submissionRouter = Router();
 
@@ -14,3 +15,7 @@ const write: RequestHandler[] = [authGuard, requireRole('student')];
 
 submissionRouter.get('/', ...read, validate({ query: listSubmissionsQuerySchema }), listSubmissions);
 submissionRouter.post('/', ...write, validate({ body: createSubmissionSchema }), createSubmission);
+
+// DSE-22: Run submission against test cases (students only)
+submissionRouter.post('/:id/run', ...write, validate({ params: idParamsSchema, body: runSubmissionSchema }), runSubmission);
+submissionRouter.get('/:id/run-result', ...read, validate({ params: idParamsSchema, query: getRunResultQuerySchema }), getSubmissionRunResult);

@@ -33,7 +33,12 @@ const envSchema = z
     CLOUDINARY_API_SECRET: optionalString,
     // Free key: https://aistudio.google.com/apikey
     GEMINI_API_KEY: optionalString,
-    GEMINI_MODEL: z.string().trim().min(1).default('gemini-3.5-flash-lite')
+    GEMINI_MODEL: z.string().trim().min(1).default('gemini-3.5-flash-lite'),
+    // Sandbox runner (DSE-58) integration
+    SANDBOX_API_URL: optionalString,
+    SANDBOX_API_KEY: optionalString,
+    // Queue: max concurrent runs per user
+    MAX_CONCURRENT_RUNS_PER_USER: z.coerce.number().int().positive().default(5)
   })
   .superRefine((value, ctx) => {
     const weakSecret = value.JWT_SECRET === PLACEHOLDER_JWT_SECRET || value.JWT_SECRET.length < 32;
@@ -77,7 +82,10 @@ export const parseEnv = (raw: RawEnv) => {
     cloudinaryApiKey: v.CLOUDINARY_API_KEY,
     cloudinaryApiSecret: v.CLOUDINARY_API_SECRET,
     geminiApiKey: v.GEMINI_API_KEY,
-    geminiModel: v.GEMINI_MODEL
+    geminiModel: v.GEMINI_MODEL,
+    sandboxApiUrl: v.SANDBOX_API_URL,
+    sandboxApiKey: v.SANDBOX_API_KEY,
+    maxConcurrentRunsPerUser: v.MAX_CONCURRENT_RUNS_PER_USER
   };
 };
 

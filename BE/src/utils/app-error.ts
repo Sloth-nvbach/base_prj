@@ -19,3 +19,5 @@ export const unauthorized = (message = 'Unauthorized') => new AppError(401, mess
 export const forbidden = (message = 'Forbidden') => new AppError(403, message);
 export const notFound = (message = 'Not found') => new AppError(404, message);
 export const conflict = (message = 'Conflict') => new AppError(409, message);
+export const serviceUnavailable = (message = 'Service unavailable') => new AppError(503, message);
+export const gatewayTimeout = (message = 'Gateway timeout') => new AppError(504, message);

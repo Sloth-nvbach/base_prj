@@ -21,5 +21,15 @@ export const listSubmissionsQuerySchema = paginationQuerySchema.extend({
   assignment: objectIdSchema.optional()
 });
 
+/** Run submission input (currently empty - uses submission's code, but extensible for overrides). */
+export const runSubmissionSchema = z.object({}).strict();
+
+/** Query params for getting run result. */
+export const getRunResultQuerySchema = z.object({
+  jobId: z.string().min(1, 'jobId is required')
+});
+
 export type CreateSubmissionInput = z.infer<typeof createSubmissionSchema>;
 export type ListSubmissionsQuery = z.infer<typeof listSubmissionsQuerySchema>;
+export type RunSubmissionInput = z.infer<typeof runSubmissionSchema>;
+export type GetRunResultQuery = z.infer<typeof getRunResultQuerySchema>;

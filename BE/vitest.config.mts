@@ -20,7 +20,13 @@ export default defineConfig({
       CLOUDINARY_API_KEY: 'test-key',
       CLOUDINARY_API_SECRET: 'test-secret',
       GEMINI_API_KEY: 'test-gemini-key',
-      GEMINI_MODEL: 'test-model'
+      GEMINI_MODEL: 'test-model',
+      // Test Redis config (mocked in mock-external-services.ts)
+      REDIS_HOST: 'localhost',
+      REDIS_PORT: '6379',
+      SANDBOX_API_URL: 'http://localhost:9999',
+      SANDBOX_API_KEY: 'test-sandbox-key',
+      MAX_CONCURRENT_RUNS_PER_USER: '5'
     },
     globalSetup: ['./tests/setup/download-mongod.ts'],
     setupFiles: ['./tests/setup/mock-external-services.ts', './tests/setup/in-memory-database.ts'],

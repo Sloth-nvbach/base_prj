@@ -96,10 +96,10 @@ UI: Giảng viên thêm/sửa/xóa tiêu chí chấm cho từng bài tập. Weig
 
 ## 9. GitHub
 - Repository / Branch: base_prj / main
-- Commit Status: COMMITTED
-- Commit Hash / URL: [to be filled after commit]
+- Commit Status: COMMITTED & PUSHED
+- Commit Hash / URL: 3b6d1a5 / https://github.com/Sloth-nvbach/base_prj/commit/3b6d1a5
 - Commit Message: feat: implement DSE-21 test case management + DSE-52 rubric builder + theme & auth UI improvements
-- Push result: [to be filled after push]
+- Push result: SUCCESS
 
 ## 10. Blockers & Remaining Work
 - None

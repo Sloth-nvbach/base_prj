@@ -1,8 +1,12 @@
 import { AssignmentModel } from '../models/assignment.model';
 import { SubmissionModel } from '../models/submission.model';
-import { forbidden, notFound } from '../utils/app-error';
+import { TestCaseModel } from '../models/testcase.model';
+import { forbidden, notFound, serviceUnavailable } from '../utils/app-error';
 import { paginate } from '../utils/pagination';
-import { CreateSubmissionInput, ListSubmissionsQuery } from '../validators/submission.validator';
+import { CreateSubmissionInput, ListSubmissionsQuery, RunSubmissionInput } from '../validators/submission.validator';
+import { getSubmissionRunQueueInstance } from './queue.service';
+import type { RunJobData } from './queue.service';
+import type { SandboxRunRequest } from './sandbox.service';
 
 /** Who is making the request. Only students (role 'student') may submit. */
 export interface Actor {
@@ -54,4 +58,101 @@ export const listSubmissions = async (actor: Actor, { assignment, ...pagination 
     select: 'title status maxScore dueDate'
   })) as typeof page.items;
   return page;
+};
+
+/**
+ * Run a submission against test cases via the sandbox queue.
+ * Returns a job ID that can be polled for results.
+ * DSE-22: POST /api/submissions/:id/run
+ */
+export const runSubmission = async (actor: Actor, submissionId: string, input: RunSubmissionInput) => {
+  // Verify submission exists and belongs to the actor
+  const submission = await SubmissionModel.findById(submissionId);
+  if (!submission) throw notFound('Submission not found');
+  if (submission.student.toString() !== actor.id) throw notFound('Submission not found');
+
+  // Verify assignment is published/closed (not draft) and has test cases
+  const assignment = await AssignmentModel.findById(submission.assignment);
+  if (!assignment || assignment.status === 'draft') throw notFound('Assignment not found');
+
+  // Get test cases for this assignment (only non-hidden for students)
+  const testCases = await TestCaseModel.find({ assignmentId: assignment._id, isHidden: false }).sort({ order: 1 });
+  if (testCases.length === 0) throw notFound('No test cases available for this assignment');
+
+  // Check if already graded/running
+  if (submission.status === 'graded') {
+    throw forbidden('Submission already graded');
+  }
+
+  // Prepare test cases for sandbox
+  const sandboxTestCases = testCases.map((tc) => ({
+    input: tc.input,
+    expectedOutput: tc.expectedOutput
+  }));
+  const testCaseIds = testCases.map((tc) => tc._id.toString());
+
+  // Map submission language to sandbox language (TypeScript -> JavaScript)
+  const sandboxLanguageMap: Record<string, SandboxRunRequest['language']> = {
+    javascript: 'javascript',
+    typescript: 'javascript', // TypeScript runs on Node.js
+    python: 'python',
+    java: 'java',
+    cpp: 'cpp',
+    c: 'c'
+  };
+  const sandboxLanguage = sandboxLanguageMap[submission.language] || 'javascript';
+
+  // Add job to queue
+  const queue = getSubmissionRunQueueInstance();
+  try {
+    const { jobId } = await queue.addJob({
+      submissionId,
+      userId: actor.id,
+      code: submission.code,
+      language: sandboxLanguage,
+      testCases: sandboxTestCases,
+      testCaseIds
+    });
+    return { jobId, message: 'Submission queued for execution' };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Max concurrent runs')) {
+      throw forbidden(error.message);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Get the result of a submission run job.
+ * DSE-22: GET /api/submissions/:id/run-result
+ */
+export const getSubmissionRunResult = async (actor: Actor, submissionId: string, jobId: string) => {
+  // Verify submission exists and belongs to the actor
+  const submission = await SubmissionModel.findById(submissionId);
+  if (!submission) throw notFound('Submission not found');
+  if (submission.student.toString() !== actor.id) throw notFound('Submission not found');
+
+  // Get job status
+  const queue = getSubmissionRunQueueInstance();
+  const job = await queue.getJob(jobId);
+
+  if (!job) throw notFound('Job not found');
+  if (job.data.submissionId !== submissionId) throw notFound('Job not found for this submission');
+
+  // Return job status and result
+  return {
+    jobId: job.id,
+    status: job.status,
+    progress: job.progress,
+    result: job.result,
+    error: job.error,
+    submission: {
+      status: submission.status,
+      totalScore: submission.totalScore,
+      maxScore: submission.maxScore,
+      testResults: submission.testResults,
+      gradedAt: submission.gradedAt,
+      feedback: submission.feedback
+    }
+  };
 };
