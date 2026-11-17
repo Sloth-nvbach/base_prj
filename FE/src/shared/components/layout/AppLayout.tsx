@@ -31,7 +31,7 @@ export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProp
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/20 text-primary">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
               <ShieldCheck className="size-4" />
             </div>
             <span className="hidden sm:inline">MERN Auth</span>
@@ -46,7 +46,7 @@ export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProp
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
                   location.pathname === item.to
-                    ? 'bg-primary/15 text-primary'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >

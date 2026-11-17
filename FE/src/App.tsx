@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { adminNavItems, adminRoutes, appWidgets, navItems, protectedRoutes } from '@/app/modules';
 import { AdminLayout } from '@/shared/components/layout/AdminLayout';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
-import { AuthLayout } from '@/modules/auth/components/AuthLayout';
 import { ProtectedRoute } from '@/modules/auth/components/ProtectedRoute';
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
 import { RegisterPage } from '@/modules/auth/pages/RegisterPage';
@@ -12,12 +11,10 @@ import { LogoutPage } from '@/modules/auth/pages/LogoutPage';
 function App() {
   return (
     <Routes>
-      {/* Auth routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      </Route>
+      {/* Auth routes — each page wraps itself with AuthLayout */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/logout" element={<LogoutPage />} />
 
       {/* Protected routes — registered by feature modules in src/app/modules.ts */}

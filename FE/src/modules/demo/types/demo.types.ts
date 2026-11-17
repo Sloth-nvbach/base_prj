@@ -26,6 +26,59 @@ export interface DemoSubmission {
   createdAt: string;
 }
 
+/** Course as returned by `GET /api/courses` (DSE-49). */
+export interface DemoCourse {
+  _id: string;
+  title: string;
+  description: string;
+  status: 'draft' | 'published' | 'archived';
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Class as returned by `GET /api/classes` (DSE-50). */
+export interface DemoClass {
+  _id: string;
+  courseId: { _id: string; title: string } | string;
+  name: string;
+  schedule: string;
+  enrollCode: string;
+  maxStudents: number;
+  currentStudents?: number;
+  status: 'planned' | 'active' | 'completed';
+  teacherId: { _id: string; email: string } | string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Enrollment as returned by `GET /api/enrollments` (DSE-50). */
+export interface DemoEnrollment {
+  _id: string;
+  classId: { _id: string; name: string } | string;
+  studentId: { _id: string; email: string } | string;
+  role: 'student' | 'ta';
+  status: 'active' | 'dropped' | 'completed';
+  enrolledAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Rubric as returned by `GET /api/rubrics` (DSE-51). */
+export interface DemoRubric {
+  _id: string;
+  assignmentId: { _id: string; title: string } | string;
+  criteria: Array<{
+    name: string;
+    description: string;
+    weight: number;
+    maxScore: number;
+    order: number;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Languages accepted by `POST /api/submissions`. Keep in sync with BE SUBMISSION_LANGUAGES. */
 export const DEMO_LANGUAGES = ['javascript', 'typescript', 'python', 'java', 'cpp', 'c'] as const;
 

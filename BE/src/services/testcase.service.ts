@@ -73,9 +73,9 @@ export const createTestCase = async (actor: Actor, assignmentId: string, input: 
   const canManage = await canManageAssignment(actor, assignmentId);
   if (!canManage) throw notFound('Assignment not found');
 
-  // Get the next order if not provided (default is 0 from validator)
-  let order = input.order ?? 0;
-  if (order === 0) {
+  // Get the next order if not provided (undefined)
+  let order = input.order;
+  if (order === undefined) {
     const lastCase = await TestCaseModel.findOne({ assignmentId }).sort({ order: -1 });
     order = (lastCase?.order ?? -1) + 1;
   }

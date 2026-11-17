@@ -8,10 +8,11 @@ import { toast } from 'sonner';
 import { authApi } from '../api/auth.api';
 import { getApiErrorMessage } from '@/shared/api/api-error';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { OtpInput } from '@/shared/components/ui/otp-input';
+import { AuthLayout } from '../components/AuthLayout';
 
 const registerSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -60,67 +61,70 @@ export const RegisterPage = () => {
     }
   };
 
-  if (step === 'verify') {
-    return (
+  const renderRegisterForm = () => (
+    <form className="space-y-5" onSubmit={onRegisterSubmit}>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input id="email" className="pl-9" placeholder="name@example.com" {...register('email')} />
+        </div>
+        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <div className="relative">
+          <KeyRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input id="password" className="pl-9" type="password" placeholder="At least 6 characters" {...register('password')} />
+        </div>
+        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+      </div>
+
+      <Button className="w-full" type="submit" disabled={loading}>
+        {loading && <Loader2 className="size-4 animate-spin" />}
+        Register and Send OTP
+      </Button>
+    </form>
+  );
+
+  const renderVerifyForm = () => (
+    <form className="space-y-5" onSubmit={onVerifySubmit}>
+      <OtpInput value={otp} onChange={setOtp} />
+      <Button className="w-full" type="submit" disabled={otp.length !== 6 || loading}>
+        {loading && <Loader2 className="size-4 animate-spin" />}
+        Verify OTP
+      </Button>
+      <button
+        type="button"
+        onClick={() => { setStep('register'); setOtp(''); }}
+        className="block w-full text-center text-sm text-muted-foreground transition hover:text-foreground"
+      >
+        Back to register
+      </button>
+    </form>
+  );
+
+  return (
+    <AuthLayout>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>Confirm OTP</CardTitle>
+          <CardTitle>{step === 'register' ? 'Create account' : 'Confirm OTP'}</CardTitle>
           <CardDescription>
-            Enter the 6-digit code sent to <span className="font-medium text-foreground">{email}</span>
+            {step === 'register'
+              ? 'Register with your email and password.'
+              : 'Enter the 6-digit code sent to your email.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-5" onSubmit={onVerifySubmit}>
-            <OtpInput value={otp} onChange={setOtp} />
-            <Button className="w-full" type="submit" disabled={otp.length !== 6 || loading}>
-              {loading && <Loader2 className="size-4 animate-spin" />}
-              Verify OTP
-            </Button>
-            <button
-              type="button"
-              onClick={() => { setStep('register'); setOtp(''); }}
-              className="block w-full text-center text-sm text-muted-foreground transition hover:text-foreground"
-            >
-              Back to register
-            </button>
-          </form>
+          {step === 'register' ? renderRegisterForm() : renderVerifyForm()}
         </CardContent>
+        <CardFooter className="flex flex-col gap-4 pt-4">
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account? <a href="/login" className="text-primary hover:underline font-medium">Sign in</a>
+          </p>
+        </CardFooter>
       </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create account</CardTitle>
-        <CardDescription>Register with your email and password.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={onRegisterSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="email" className="pl-9" placeholder="name@example.com" {...register('email')} />
-            </div>
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <KeyRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="password" className="pl-9" type="password" placeholder="At least 6 characters" {...register('password')} />
-            </div>
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-          </div>
-
-          <Button className="w-full" type="submit" disabled={loading}>
-            {loading && <Loader2 className="size-4 animate-spin" />}
-            Register and Send OTP
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    </AuthLayout>
   );
 };

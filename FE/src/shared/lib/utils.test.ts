@@ -23,8 +23,8 @@ describe('cn', () => {
 });
 
 describe('theme helpers', () => {
-  it('defaults to the system theme', () => {
-    expect(getTheme()).toBe('system');
+  it('defaults to the dark theme', () => {
+    expect(getTheme()).toBe('dark');
   });
 
   it('persists and re-reads the chosen theme', () => {

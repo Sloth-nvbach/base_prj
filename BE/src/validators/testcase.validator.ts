@@ -7,7 +7,7 @@ export const createTestCaseSchema = z.object({
   expectedOutput: z.string().min(1, 'Expected output is required').max(10000),
   isHidden: z.boolean().default(false),
   order: z.number().int().min(0).optional(),
-  points: z.coerce.number().int().min(1, 'Points must be >= 1').max(100, 'Points must be <= 100')
+  points: z.coerce.number().int().min(1, 'Points must be >= 1').max(100, 'Points must be <= 100').default(10)
 });
 
 export const updateTestCaseSchema = z
@@ -24,7 +24,7 @@ export const updateTestCaseSchema = z
 export const listTestCasesQuerySchema = paginationQuerySchema.extend({
   sort: sortSchema(['order', 'createdAt', 'updatedAt']),
   assignmentId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
-  isHidden: z.enum(['true', 'false']).optional().transform((value) => value === 'true')
+  isHidden: z.enum(['true', 'false']).optional().transform((value) => value === undefined ? undefined : value === 'true')
 });
 
 export type CreateTestCaseInput = z.infer<typeof createTestCaseSchema>;
@@ -37,7 +37,7 @@ export const listTestResultsQuerySchema = paginationQuerySchema.extend({
   sort: sortSchema(['createdAt']),
   submissionId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
   testCaseId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
-  passed: z.enum(['true', 'false']).optional().transform((value) => value === 'true')
+  passed: z.enum(['true', 'false']).optional().transform((value) => value === undefined ? undefined : value === 'true')
 });
 
 export type ListTestResultsQuery = z.infer<typeof listTestResultsQuerySchema>;

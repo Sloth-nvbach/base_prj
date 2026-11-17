@@ -12,6 +12,7 @@
     "gen:module": "node scripts/gen-module.mjs"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.5",
+    "playwright": "^1.65.1"
   }
 }

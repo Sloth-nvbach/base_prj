@@ -25,13 +25,14 @@ const write: RequestHandler[] = [requireRole('teacher', 'admin')];
 
 /** TestCase routes */
 testcaseRouter.get('/', read, validate({ query: listTestCasesQuerySchema }), listTestCases);
+
+/** TestResult routes (read-only) - MUST come before /:id to avoid catch-all */
+testcaseRouter.get('/results', read, validate({ query: listTestResultsQuerySchema }), listTestResults);
+testcaseRouter.get('/results/:id', read, validate({ params: idParamsSchema }), getTestResult);
+
 testcaseRouter.get('/:id', read, validate({ params: idParamsSchema }), getTestCase);
 testcaseRouter.post('/assignment/:assignmentId', write, validate({ params: assignmentIdParamsSchema, body: createTestCaseSchema }), createTestCase);
 testcaseRouter.post('/assignment/:assignmentId/bulk', write, validate({ params: assignmentIdParamsSchema, body: bulkTestCasesBodySchema }), createTestCasesBulk);
 testcaseRouter.patch('/:id', write, validate({ params: idParamsSchema, body: updateTestCaseSchema }), updateTestCase);
 testcaseRouter.delete('/:id', write, validate({ params: idParamsSchema }), deleteTestCase);
 testcaseRouter.post('/assignment/:assignmentId/reorder', write, validate({ params: assignmentIdParamsSchema, body: testCaseIdsBodySchema }), reorderTestCases);
-
-/** TestResult routes (read-only) */
-testcaseRouter.get('/results', read, validate({ query: listTestResultsQuerySchema }), listTestResults);
-testcaseRouter.get('/results/:id', read, validate({ params: idParamsSchema }), getTestResult);

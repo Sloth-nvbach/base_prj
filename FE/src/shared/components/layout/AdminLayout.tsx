@@ -27,7 +27,7 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
   const sidebar = (
     <nav aria-label="Admin" className="flex h-full flex-col gap-1 p-3">
       <Link to={ADMIN_HOME} className="mb-4 flex items-center gap-2 px-3 py-2 text-sm font-semibold">
-        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/20 text-primary">
+        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <ShieldCheck className="size-4" />
         </div>
         Admin
@@ -42,7 +42,9 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
           className={({ isActive }) =>
             cn(
               'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-              isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              isActive
+                ? 'bg-primary/10 text-primary'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground'
             )
           }
         >
@@ -52,7 +54,7 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
       ))}
       <Link
         to="/"
-        className="mt-auto flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="mt-auto flex items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
       >
         <ArrowLeft className="size-4" />
         Back to app
@@ -63,7 +65,7 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar: fixed column on large screens */}
-      <aside className="hidden w-60 shrink-0 border-r bg-card lg:block">
+      <aside className="hidden w-60 shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
         <div className="sticky top-0 h-screen">{sidebar}</div>
       </aside>
 
@@ -71,11 +73,11 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
       {menuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" aria-label="Close menu" className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 border-r bg-card">
+          <aside className="absolute inset-y-0 left-0 w-64 border-r border-sidebar-border bg-sidebar">
             <button
               type="button"
               aria-label="Close menu"
-              className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-3 text-sidebar-foreground hover:text-sidebar-foreground"
               onClick={() => setMenuOpen(false)}
             >
               <X className="size-5" />
@@ -86,7 +88,7 @@ export const AdminLayout = ({ navItems }: AdminLayoutProps) => {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-card px-4">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card px-4">
           <Button variant="ghost" size="sm" className="lg:hidden" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
             <Menu className="size-5" />
           </Button>

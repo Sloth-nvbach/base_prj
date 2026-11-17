@@ -277,7 +277,7 @@ describe('DSE-20: TestResult read-only', () => {
     const studentUser = await student();
     studentAuth = bearerFor(studentUser);
 
-    const { body: assignment } = await createAssignment(teacherAuth);
+    const { body: assignment } = await createAssignment(teacherAuth, { status: 'published' });
     assignmentId = assignment._id;
 
     const tc = await TestCaseModel.create({ assignmentId, input: '1\n', expectedOutput: '2\n', order: 0, points: 10 });
@@ -286,7 +286,7 @@ describe('DSE-20: TestResult read-only', () => {
     const sub = await api()
       .post('/api/submissions')
       .set('Authorization', studentAuth)
-      .send({ assignmentId, code: 'console.log(1);', language: 'javascript' });
+      .send({ assignment: assignmentId, code: 'console.log(1);', language: 'javascript' });
     submissionId = sub.body._id;
   });
 
@@ -295,10 +295,12 @@ describe('DSE-20: TestResult read-only', () => {
       submissionId: new Types.ObjectId(submissionId), testCaseId: new Types.ObjectId(testCaseId), passed: true, stdout: '2\n', stderr: '', exitCode: 0, executionTimeMs: 10, memoryUsedMB: 5
     });
 
+    console.log('DEBUG submissionId:', submissionId, typeof submissionId);
     const response = await api()
       .get(`/api/test-cases/results?submissionId=${submissionId}`)
       .set('Authorization', teacherAuth);
 
+    console.log('DEBUG response:', response.status, response.body);
     expect(response.status).toBe(200);
     expect(response.body.total).toBe(1);
     expect(response.body.items[0].passed).toBe(true);

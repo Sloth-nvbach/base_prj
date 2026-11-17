@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export type Theme = 'light' | 'dark' | 'system';
 
 export function getTheme(): Theme {
-  return (localStorage.getItem('theme') as Theme) ?? 'system';
+  return (localStorage.getItem('theme') as Theme) ?? 'dark';
 }
 
 export function setTheme(theme: Theme) {
@@ -22,4 +22,9 @@ export function applyTheme(theme: Theme) {
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   root.classList.toggle('dark', isDark);
+}
+
+// Initialize theme on load
+if (typeof window !== 'undefined') {
+  applyTheme(getTheme());
 }

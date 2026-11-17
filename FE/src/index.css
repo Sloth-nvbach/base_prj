@@ -31,64 +31,116 @@
   --color-sidebar-border: var(--sidebar-border);
 }
 
-/* Light theme (default) */
+/* 
+  Catppuccin Mocha / Tokyo Night inspired theme
+  Dark mode as default (coding platform), eye-friendly for long sessions
+  Not pure black - reduces eye strain, good contrast ratios
+*/
+
+/* Dark theme (DEFAULT) - Catppuccin Mocha inspired */
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(222 47% 11%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(222 47% 11%);
-  --primary: hsl(262 83% 58%);
-  --primary-foreground: hsl(0 0% 100%);
-  --muted: hsl(210 40% 96%);
-  --muted-foreground: hsl(215 16% 47%);
-  --border: hsl(214 32% 91%);
-  --input: hsl(214 32% 91%);
-  --ring: hsl(262 83% 58%);
-  --destructive: hsl(0 84% 60%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(222 47% 11%);
+  /* Base colors - Catppuccin Mocha palette */
+  --background: hsl(230 20% 12%);        /* #1e1e2e - deep navy, not pure black */
+  --foreground: hsl(240 10% 85%);        /* #cdd6f4 - soft white */
+  --card: hsl(230 15% 10%);              /* #181825 - slightly lighter surface */
+  --card-foreground: hsl(240 10% 85%);   /* #cdd6f4 */
+  
+  /* Primary - Catppuccin Lavender */
+  --primary: hsl(275 75% 70%);           /* #cba6f7 - lavender */
+  --primary-foreground: hsl(230 20% 12%); /* #1e1e2e */
+  
+  /* Secondary - Catppuccin Surface */
+  --secondary: hsl(230 15% 15%);         /* #313244 - overlay */
+  --secondary-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  
+  /* Muted - Catppuccin Overlay/Muted */
+  --muted: hsl(230 15% 18%);             /* #45475a - surface1 */
+  --muted-foreground: hsl(240 5% 55%);   /* #6c7086 - overlay1 (comments) */
+  
+  /* Accent - Catppuccin Pink */
+  --accent: hsl(325 75% 70%);            /* #f5c2e7 - pink */
+  --accent-foreground: hsl(230 20% 12%);  /* #1e1e2e */
+  
+  /* Destructive - Catppuccin Red */
+  --destructive: hsl(350 85% 65%);       /* #f38ba8 - red */
+  --destructive-foreground: hsl(230 20% 12%); /* #1e1e2e */
+  
+  /* Borders & Inputs */
+  --border: hsl(230 15% 25%);            /* #585b70 - surface2 */
+  --input: hsl(230 15% 18%);             /* #45475a - surface1 */
+  --ring: hsl(275 75% 70%);              /* #cba6f7 - lavender */
+  
+  /* Popover */
+  --popover: hsl(230 15% 10%);           /* #181825 */
+  --popover-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  
+  /* Sidebar (Admin layout) */
+  --sidebar: hsl(230 15% 8%);            /* #11111b - crust */
+  --sidebar-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  --sidebar-accent: hsl(230 15% 15%);    /* #313244 */
+  --sidebar-accent-foreground: hsl(240 10% 85%); /* #cdd6f4 */
+  --sidebar-border: hsl(230 15% 18%);    /* #45475a */
+}
+
+/* Light theme (optional - softer for daytime) */
+.light {
+  /* Catppuccin Latte inspired light theme */
+  --background: hsl(220 30% 98%);        /* #eff1f5 - base */
+  --foreground: hsl(230 25% 15%);        /* #4c4f69 - text */
+  --card: hsl(0 0% 100%);                /* #ffffff */
+  --card-foreground: hsl(230 25% 15%);   /* #4c4f69 */
+  
+  --primary: hsl(275 75% 55%);           /* #8839ef - lavender (darker for light bg) */
+  --primary-foreground: hsl(0 0% 100%);  /* white */
+  
+  --secondary: hsl(220 30% 90%);         /* #ccd0da - surface0 */
+  --secondary-foreground: hsl(230 25% 15%); /* #4c4f69 */
+  
+  --muted: hsl(220 30% 92%);             /* #e6e9ef - surface1 */
+  --muted-foreground: hsl(230 15% 40%);  /* #7287fd - surface2 */
+  
+  --accent: hsl(325 75% 55%);            /* #d20f7a - pink (darker) */
+  --accent-foreground: hsl(0 0% 100%);   /* white */
+  
+  --destructive: hsl(350 75% 50%);       /* #d20f39 - red */
+  --destructive-foreground: hsl(0 0% 100%); /* white */
+  
+  --border: hsl(220 25% 85%);            /* #bcc0cc - surface1 */
+  --input: hsl(220 25% 88%);             /* #dce0e8 - surface0 */
+  --ring: hsl(275 75% 55%);              /* #8839ef */
+  
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222 47% 11%);
-  --secondary: hsl(210 40% 96%);
-  --secondary-foreground: hsl(222 47% 11%);
-  --sidebar: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(222 47% 11%);
-  --sidebar-accent: hsl(210 40% 96%);
-  --sidebar-accent-foreground: hsl(222 47% 11%);
-  --sidebar-border: hsl(214 32% 91%);
+  --popover-foreground: hsl(230 25% 15%);
+  
+  --sidebar: hsl(220 30% 96%);
+  --sidebar-foreground: hsl(230 25% 15%);
+  --sidebar-accent: hsl(220 25% 88%);
+  --sidebar-accent-foreground: hsl(230 25% 15%);
+  --sidebar-border: hsl(220 25% 85%);
 }
 
-/* Dark theme */
-.dark {
-  --background: hsl(222 47% 11%);
-  --foreground: hsl(210 40% 98%);
-  --card: hsl(224 40% 14%);
-  --card-foreground: hsl(210 40% 98%);
-  --primary: hsl(262 83% 58%);
-  --primary-foreground: hsl(210 40% 98%);
-  --muted: hsl(223 25% 20%);
-  --muted-foreground: hsl(215 20% 75%);
-  --border: hsl(223 21% 26%);
-  --input: hsl(223 21% 26%);
-  --ring: hsl(262 83% 58%);
-  --destructive: hsl(0 84% 60%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --accent: hsl(223 25% 20%);
-  --accent-foreground: hsl(210 40% 98%);
-  --popover: hsl(224 40% 14%);
-  --popover-foreground: hsl(210 40% 98%);
-  --secondary: hsl(223 25% 20%);
-  --secondary-foreground: hsl(210 40% 98%);
-  --sidebar: hsl(224 40% 10%);
-  --sidebar-foreground: hsl(210 40% 98%);
-  --sidebar-accent: hsl(223 25% 16%);
-  --sidebar-accent-foreground: hsl(210 40% 98%);
-  --sidebar-border: hsl(223 21% 20%);
-}
-
+/* Scrollbar styling - consistent across themes */
 * {
   border-color: var(--color-border);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 4px;
+  border: 2px solid var(--color-background);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
 }
 
 body {
@@ -98,4 +150,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: Inter, Arial, sans-serif;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Selection colors */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
 }

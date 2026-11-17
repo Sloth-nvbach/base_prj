@@ -96,7 +96,7 @@ export const DataTable = <T,>({
       const id = getRowId(row);
       const checked = selectedIds?.includes(id) ?? false;
       return (
-        <tr key={id} className={cn('border-t transition-colors hover:bg-muted/50', checked && 'bg-primary/5')}>
+        <tr key={id} className={cn('border-t transition-colors hover:bg-muted/50', checked && 'bg-primary/10')}>
           {selectable && (
             <td className="w-10 px-4 py-3">
               <input
@@ -122,7 +122,7 @@ export const DataTable = <T,>({
   return (
     <div className="overflow-x-auto rounded-xl border bg-card">
       <table className="w-full min-w-[640px] text-sm" aria-label={label} aria-busy={isLoading}>
-        <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+        <thead className="bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
             {selectable && (
               <th className="w-10 px-4 py-3">

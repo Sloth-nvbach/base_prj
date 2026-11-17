@@ -1,54 +1,59 @@
 import { ShieldCheck } from 'lucide-react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { cn } from '@/shared/lib/utils';
-import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
+import type { ReactNode } from 'react';
 
-const navItems = [
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' },
-  { to: '/forgot-password', label: 'Forgot Password' }
-];
+interface AuthLayoutProps {
+  children: ReactNode;
+}
 
-export const AuthLayout = () => {
-  const location = useLocation();
-
+export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center p-4 md:p-8">
-      <div className="absolute right-4 top-4">
-        <ThemeToggle />
-      </div>
-      <section className="grid w-full gap-6 md:grid-cols-2">
-        <div className="hidden rounded-2xl border bg-card p-8 md:flex md:flex-col md:justify-between">
-          <div>
-            <div className="mb-5 inline-flex size-11 items-center justify-center rounded-xl bg-primary/20 text-primary">
+    <div className="min-h-screen flex bg-background">
+      {/* Branding Panel - Left side (30% on lg+, hidden on mobile) */}
+      <aside className="hidden lg:flex lg:w-3/10 flex-col items-center justify-center p-10 bg-sidebar border-r border-sidebar-border min-h-screen">
+        <div className="max-w-sm w-full text-center">
+          <div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <ShieldCheck className="size-7" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight mb-3 text-sidebar-foreground">
+            Smart EdTech
+          </h1>
+          <p className="text-base text-sidebar-foreground/70 mb-8">
+            AI-powered grading & teaching assistant platform for programming courses.
+          </p>
+          <ul className="space-y-3 text-left text-sidebar-foreground/80">
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="size-4 shrink-0 text-primary" />
+              <span className="text-sm">Create assignments with ease</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="size-4 shrink-0 text-primary" />
+              <span className="text-sm">Auto-grading with test cases</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="size-4 shrink-0 text-primary" />
+              <span className="text-sm">Flexible rubric builder</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="size-4 shrink-0 text-primary" />
+              <span className="text-sm">AI-assisted feedback</span>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      {/* Form Panel - Right side (70% on lg+, full width on mobile) */}
+      <main className="flex w-full lg:w-7/10 items-center justify-center p-8">
+        <div className="w-full max-w-lg">
+          <div className="lg:hidden text-center mb-6">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
               <ShieldCheck className="size-6" />
             </div>
-            <h1 className="text-3xl font-bold">MERN Auth Starter</h1>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Secure authentication base with OTP verification and clean architecture.
-            </p>
+            <h1 className="text-xl font-bold text-foreground">Smart EdTech</h1>
+            <p className="text-muted-foreground mt-1 text-sm">AI-powered grading platform</p>
           </div>
-          <p className="text-xs text-muted-foreground">TypeScript • React • shadcn/ui • TailwindCSS</p>
+          {children}
         </div>
-
-        <div className="space-y-4">
-          <nav className="inline-flex rounded-lg border bg-muted/40 p-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  'rounded-md px-3 py-1.5 text-sm text-muted-foreground transition',
-                  location.pathname === item.to && 'bg-background text-foreground shadow-sm'
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <Outlet />
-        </div>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 };

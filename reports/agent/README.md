@@ -7,6 +7,8 @@ reports/agent/
 ├── latest.md                    # Latest execution summary
 └── jira/
     ├── DSE-56-51-20.md         # Sprint 4 foundational tasks report
+    ├── DSE-21.md               # Test case management (DSE-21)
+    ├── DSE-52.md               # Rubric builder (DSE-52)
     └── (future task reports)
 ```
 
@@ -27,3 +29,10 @@ Each Jira task report follows the standard template:
 
 ## Latest Execution
 See [latest.md](latest.md) for the most recent execution summary.
+
+## Sprint 4 Summary
+| Jira ID | Title | Status |
+|---------|-------|--------|
+| DSE-21 | Giảng viên thiết lập bộ kiểm thử cho bài tập | DONE |
+| DSE-52 | Teacher defines Rubric per Exercise | DONE |
+| DSE-56-51-20 | Sprint 4 foundational tasks | DONE |

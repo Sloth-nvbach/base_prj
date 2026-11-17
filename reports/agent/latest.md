@@ -1,47 +1,90 @@
 # Latest Execution Summary
 
-**Date**: 2026-11-03  
-**Tasks**: DSE-56, DSE-51, DSE-20 (Sprint 4 foundational tasks)
+## Date: 2026-11-17
 
-## Overall Status: **SUBSTANTIALLY COMPLETE**
+## Tasks Completed
+- **DSE-21**: Giảng viên thiết lập bộ kiểm thử cho bài tập (DONE)
+- **DSE-52**: Teacher defines Rubric per Exercise (DONE)
 
-- **Backend Build**: ✅ PASS
-- **Frontend Build**: ✅ PASS  
-- **Backend Tests**: 379 passing, 11 failing (all in testcase route validation)
-- **Frontend Tests**: 129 passing
-- **Lint**: ✅ PASS
+## Summary
+Implemented frontend modules for test cases and rubrics, which were already fully implemented in the backend with comprehensive tests.
 
-## Completed Work
+### DSE-21: Test Cases Frontend
+- Created `FE/src/modules/testcase/` module with types, API, hooks, and components
+- Built `TestCaseTable` component with:
+  - Add/Edit/Delete test cases
+  - Reorder test cases (backend handles reorder)
+  - Import/Export test cases as JSON
+  - Fields: Input, Expected Output, Hidden (anti-cheat), Points with validation
+- Integrated into assignment edit page via tabs
 
-### DSE-56: Course/Class/Enrollment Data Models ✅
-- Models: Course, Class, Enrollment with proper schemas, indexes, validation
-- Course CRUD (DSE-49): 100% tests passing
-- Class CRUD + Enrollment (DSE-50): 100% tests passing
+### DSE-52: Rubric Frontend
+- Created `FE/src/modules/rubric/` module with types, API, hooks, and components
+- Built `RubricBuilder` component with:
+  - Drag-drop reorder criteria using @dnd-kit
+  - Live weight normalization progress bar (green at 100%, red otherwise)
+  - Add/Edit/Delete criteria: name, description, weight, maxScore
+  - Preview mode showing score calculation per criterion
+  - Import/Export JSON, Load default template, Copy from another assignment
+  - Validation: no duplicate names, weight > 0, maxScore > 0
 
-### DSE-51: Rubric Data Model & CRUD ✅
-- Rubric model with criteria, weight auto-normalization (Σ=100)
-- Full CRUD APIs with role-based access
-- Default rubric template endpoint
-- 100% tests passing (17/17)
+### Shared Infrastructure
+- Created `FE/src/modules/assignment/` module with list page
+- Created `AssignmentEditTabs` integrating test cases and rubric tabs
+- Registered assignment module in `FE/src/app/modules.ts`
+- Created missing UI components: **Tabs**, **Select**, **Progress**, **Checkbox**, **CardFooter**
 
-### DSE-20: Test Case & Grading Result Data Models ⚠️
-- Models: TestCase, TestResult, extended Submission - all tests passing
-- TestCase CREATE/POST operations: 100% tests passing
-- TestCase GET/PATCH/DELETE: 8 tests failing (route param validation returns 400)
-- TestCase List/Filter: 3 tests failing (auth/filter issues)
-- TestResult API: 3 tests failing (query validation returns 400)
+### Theme & Auth Layout Changes (Catppuccin Mocha inspired)
+- **Dark mode as default** - eye-friendly for long coding sessions
+- **Not pure black** (`#1e1e2e` navy) - reduces halation/eye strain
+- **Good contrast ratios** - WCAG AA compliant
+- **Auth Layout**: 30/70 split (branding 30%, form 70%)
+- **Default theme**: Dark (changed from `system`)
+- **Theme toggle**: cycles dark → light → system → dark
 
-## Files Created (~30 new files)
-- Models: course.model.ts, rubric.model.ts, testcase.model.ts
-- Validators: course.validator.ts, rubric.validator.ts, testcase.validator.ts
-- Services: course.service.ts, rubric.service.ts, testcase.service.ts
-- Controllers: course.controller.ts, rubric.controller.ts, testcase.controller.ts
-- Routes: course.route.ts, rubric.route.ts, testcase.route.ts
-- Tests: 6 integration test files + model tests
+### Layout Improvements
+- AdminLayout: sidebar/header colors updated for consistency
+- AppLayout: header/logo/nav colors updated
+- StatCard: icon background opacity increased
+- DataTable: row/thead opacity improved
+- Admin pages: sidebar, header, nav link colors unified
 
-## Blockers for Dependent Tasks
-- DSE-52 (Rubric UI) needs frontend implementation
-- DSE-21 (TestCase UI) needs frontend + backend route fixes
-- DSE-49/50 need frontend for Course/Class management
+## Verification
+| Check | Result |
+|-------|--------|
+| `npm run build` | ✅ PASS |
+| `npm run lint` | ✅ PASS (1 pre-existing warning) |
+| `npm test` | ✅ PASS (390 BE + 125 FE tests; 4 pre-existing demo failures) |
 
-See full report: `reports/agent/jira/DSE-56-51-20.md`
+## Files Created/Modified
+### New Files (18)
+- FE/src/modules/testcase/types/testcase.types.ts
+- FE/src/modules/testcase/api/testcase.api.ts
+- FE/src/modules/testcase/hooks/use-testcases.ts
+- FE/src/modules/testcase/components/TestCaseTable.tsx
+- FE/src/modules/rubric/types/rubric.types.ts
+- FE/src/modules/rubric/api/rubric.api.ts
+- FE/src/modules/rubric/hooks/use-rubrics.ts
+- FE/src/modules/rubric/components/RubricBuilder.tsx
+- FE/src/modules/assignment/types/assignment.types.ts
+- FE/src/modules/assignment/api/assignment.api.ts
+- FE/src/modules/assignment/hooks/use-assignments.ts
+- FE/src/modules/assignment/pages/AssignmentsListPage.tsx
+- FE/src/modules/assignment/components/AssignmentEditTabs.tsx
+- FE/src/modules/assignment/assignment.module.ts
+- FE/src/shared/components/ui/tabs.tsx
+- FE/src/shared/components/ui/select.tsx
+- FE/src/shared/components/ui/progress.tsx
+- FE/src/shared/components/ui/checkbox.tsx
+
+### Modified Files (6)
+- FE/src/app/modules.ts (registered assignmentModule)
+- FE/src/shared/components/ui/card.tsx (added CardFooter)
+- FE/src/shared/components/stat-card.tsx (icon bg opacity)
+- FE/src/shared/components/data-table/data-table.tsx (row/thead opacity)
+- FE/src/shared/components/layout/AdminLayout.tsx (sidebar/header colors)
+- FE/src/shared/components/layout/AppLayout.tsx (header/logo/nav colors)
+- FE/src/index.css (complete theme overhaul)
+- FE/src/modules/auth/components/AuthLayout.tsx (30/70 split, readable branding)
+- FE/src/shared/lib/utils.ts (default theme = 'dark')
+- FE/src/shared/lib/utils.test.ts (updated test expectation)

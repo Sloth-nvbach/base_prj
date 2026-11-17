@@ -19,7 +19,7 @@ export const StatCard = ({ label, value, icon: Icon, hint, isLoading }: StatCard
       {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-bold">{value ?? '—'}</p>}
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
-    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
       <Icon className="size-5" />
     </div>
   </Card>
