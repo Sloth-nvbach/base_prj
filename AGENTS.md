@@ -95,7 +95,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 | `Assignment` | `title`, `description`, `instructions`, `createdBy`, `dueDate?`, `maxScore` ≥ 0 (100), status `draft\|published\|closed` |
 | `Submission` | `assignment`, `student`, `code`, `language` enum, `submittedAt`, status `submitted\|graded`, teacher-confirmed `score` ≥ 0 (≤ `maxScore`, never the AI suggestion), `feedback`. History kept (not unique) |
 | `Rubric` | criteria (name, description, weight auto-normalized to Σ=100); default template endpoint |
-| `TestCase` / `TestResult` | `assignment`, `input`, `expectedOutput`, `isHidden` (never shown to students), `points` / per-submission results |
+| `TestCase` / `TestResult` | `assignment`, `input`, `expectedOutput`, `isHidden` (input/expected output never shown to students, but always graded in runs), `points` / per-submission results |
 
 - **Assignments** (`assignment.service.ts`): teachers create/edit/delete own (others' → 404), admins any. Students read published/closed; teachers own (incl. drafts); admins all. Drafts → 404, never 403.
 - **Submissions** (`submission.service.ts`): students only, unlimited attempts. `GET /api/submissions?assignment=<id>` → caller's own, populated. `GET /api/assignments/:id/submission-access` → `{ canSubmit, reason? }`; closed/past deadline blocks `POST /api/submissions` (403).

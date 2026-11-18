@@ -75,8 +75,8 @@ export const runSubmission = async (actor: Actor, submissionId: string, input: R
   const assignment = await AssignmentModel.findById(submission.assignment);
   if (!assignment || assignment.status === 'draft') throw notFound('Assignment not found');
 
-  // Get test cases for this assignment (only non-hidden for students)
-  const testCases = await TestCaseModel.find({ assignmentId: assignment._id, isHidden: false }).sort({ order: 1 });
+  // Grade against all test cases. Hidden ones run too; only their input/expected output stay hidden from students.
+  const testCases = await TestCaseModel.find({ assignmentId: assignment._id }).sort({ order: 1 });
   if (testCases.length === 0) throw notFound('No test cases available for this assignment');
 
   // Check if already graded/running

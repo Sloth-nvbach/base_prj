@@ -29,11 +29,12 @@ const createAssignment = async (teacherAuth: string, body: Record<string, unknow
   return created;
 };
 
-const createTestCases = async (teacherAuth: string, assignmentId: string, cases: Array<{ input: string; expectedOutput: string; points?: number }>) => {
+const createTestCases = async (teacherAuth: string, assignmentId: string, cases: Array<{ input: string; expectedOutput: string; points?: number; isHidden?: boolean }>) => {
   const testCases = cases.map((c, i) => ({
     input: c.input,
     expectedOutput: c.expectedOutput,
     points: c.points ?? 10,
+    isHidden: c.isHidden ?? false,
     order: i
   }));
   const { body } = await api()
@@ -88,6 +89,18 @@ describe('DSE-22: Submission run via sandbox', () => {
     expect(runResponse.status).toBe(202);
     expect(runResponse.body).toHaveProperty('jobId');
     expect(runResponse.body.message).toBe('Submission queued for execution');
+  });
+
+  it('grades hidden test cases too (an assignment with only hidden cases can run)', async () => {
+    const { auth: teacherAuth } = await createTeacherAuth();
+    const assignment = await createAssignment(teacherAuth);
+    await createTestCases(teacherAuth, assignment._id, [{ input: '10 20', expectedOutput: '30', isHidden: true }]);
+
+    const auth = bearerFor(await student());
+    const { body: submission } = await submit(auth, assignment._id);
+
+    const runResponse = await runSubmission(auth, submission._id);
+    expect(runResponse.status).toBe(202);
   });
 
   it('rejects run for submission without test cases', async () => {
