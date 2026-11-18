@@ -43,7 +43,8 @@ describe('POST /api/chat', () => {
       ],
       config: {
         systemInstruction: chatbotConfig.systemPrompt,
-        thinkingConfig: { thinkingLevel: 'LOW' }
+        thinkingConfig: { thinkingLevel: 'LOW' },
+        abortSignal: expect.any(AbortSignal)
       }
     });
   });

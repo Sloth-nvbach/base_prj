@@ -1,0 +1,68 @@
+# DSE-58 — Implement Docker Sandbox Runner for Code Execution
+
+## 1. General Info
+- Jira ID: DSE-58 (Epic DSE-3, blocked-by DSE-57 Done)
+- Project / Sprint: DSE / Sprint 5: Core Grading (Sandbox + Score + AI)
+- Date: 2026-11-18
+- Status: PARTIAL — code + unit tests done; not yet run against a real Docker daemon
+- Repository / Branch: Sloth-nvbach/base_prj / main
+
+## 2. Objective & Acceptance Criteria
+Isolated Docker runner, `POST /api/sandbox/run` contract used by DSE-22. Demo scope (Jira comment 18/11): JavaScript + Python; new container per run, `--network none`, 256 MB, 0.5 CPU, 10 s, non-root, `--read-only` + tmpfs /tmp; handle timeout / OOM / compile-runtime errors. Out of scope: pre-warmed pool, Prometheus, custom seccomp, load test, 80 % coverage, Java/C/C++.
+
+## 3. Initial Survey
+BE client `sandbox.service.ts` + BullMQ worker (DSE-22) already call `${SANDBOX_API_URL}/api/sandbox/run` and map results by index. No runner existed. Docker CLI 29.8.2 installed but daemon not running on this machine.
+
+## 4. Execution Log
+- 2026-11-18: New zero-dependency Node service `sandbox/` (`runner.mjs`, `server.mjs`). One container per test case (`--rm --pull never --network none --memory/--memory-swap 256m --cpus 0.5 --pids-limit 64 --read-only --tmpfs /tmp:size=10m --user 65534 --cap-drop ALL --security-opt no-new-privileges`), max 4 in parallel, `docker kill` on 10 s timeout. Status: timeout > memory_limit (exit 137) > error (non-zero exit) > completed. Docker failure (exit 125, daemon down) → HTTP 503. Optional Bearer `SANDBOX_API_KEY` (timing-safe), 1 MB body, code/input ≤ 64 KB, ≤ 50 test cases, output capped 64 KB. Scripts `npm run sandbox`, `npm run sandbox:pull`; tests added to root `npm test`.
+- Decision: separate service (not inside BE) so student code never runs on the API server and the runner can be deployed on its own host.
+
+## 5. Files Changed
+| File | Action | Description |
+|------|--------|-------------|
+| sandbox/runner.mjs | CREATE | Docker args, exec with timeout/kill, grading |
+| sandbox/server.mjs | CREATE | HTTP API, auth, validation |
+| sandbox/sandbox.test.mjs | CREATE | 7 tests (fake docker exec) |
+| package.json | MODIFY | `sandbox`, `sandbox:pull`, test step |
+| BE/.env.example, AGENTS.md, BE/docs/architecture.md | MODIFY | Setup docs |
+
+## 6. Testing & Verification
+| Test | Command / Method | Result | Notes |
+|------|------------------|--------|-------|
+| Lint | `npm run lint` | PASS | FE only; sandbox not linted |
+| Unit | `node --test sandbox/sandbox.test.mjs` | PASS | 7/7, Docker faked |
+| Full suite | `npm test` | PASS | |
+| Build | `npm run build` | PASS | |
+| Real Docker run | `npm run sandbox` + sample programs | NOT RUN | Docker daemon not running |
+
+## 7. Acceptance Criteria
+| Criteria | Status | Evidence |
+|----------|--------|----------|
+| Images for languages (demo: JS, Python) | PARTIAL | Official images via `sandbox:pull`; not pulled here |
+| API returns correct results for sample programs | NOT VERIFIED | Logic tested with fake exec only |
+| Timeout, OOM, compile errors handled | PASS (unit) | sandbox.test.mjs |
+| 5 parallel runs < 10 s | NOT VERIFIED | out of demo scope |
+| Security (no network, non-root, read-only, caps dropped) | PASS (args) | docker args test; no escape audit |
+| Integration with DSE-22 | PARTIAL | Contract matches `sandbox.service.ts`; not run end-to-end |
+| Coverage > 80 % | N/A | out of demo scope |
+
+## 8. Jira
+- Status before: In Progress. Proposed: keep In Progress until real Docker verification. Executed: none.
+
+## 9. GitHub
+- Branch: main
+- Commit message: feat: DSE-27 AI service connection layer + DSE-58 docker sandbox runner
+
+## 10. Blockers & Remaining Work
+- Docker daemon not running locally → no live verification.
+- `memoryUsedMB` always 0 (not measured).
+- BE allows `typescript`, `java`, `cpp`, `c` submissions; runner answers 400 for them (demo scope).
+
+## 11. Next Steps
+1. Start Docker Desktop, `npm run sandbox:pull`, `npm run sandbox`, set `SANDBOX_API_URL=http://localhost:5010` in `BE/.env`.
+2. Run a JS and a Python sample (correct, wrong output, infinite loop, huge allocation, syntax error) and an end-to-end submission run.
+
+## 12. Session History
+| Date | Progress | Changes | Status |
+|------|----------|---------|--------|
+| 2026-11-18 | Runner + tests | sandbox/, scripts, docs | PARTIAL |

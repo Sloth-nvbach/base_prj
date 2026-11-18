@@ -2,8 +2,8 @@
 
 > Overwritten each session (≤ 20 lines). Full history lives in `jira/<ID>.md` and `git log`.
 
-- **Last done:** DSE-21, DSE-52, DSE-22 — DONE (details in `jira/DSE-21.md`, `jira/DSE-52.md`, `jira/DSE-22.md`).
-- **This session:** AGENTS.md compacted (~40 KB → ~15 KB); report template moved to `TEMPLATE.md`; workflow now: targeted tests while iterating, full check once, code + report in one commit, no commit hashes in reports.
-- **Active task:** none.
-- **Next steps:** pick next DSE task from Jira.
-- **Blockers:** none.
+- **Last done:** DSE-27 DONE (AI service layer: `generateAiText` / `generateAiJson`). DSE-58 PARTIAL (`sandbox/` Docker runner, unit-tested with fake Docker).
+- **Active task:** DSE-58 — live verification.
+- **Next steps:** start Docker, `npm run sandbox:pull`, `npm run sandbox`, set `SANDBOX_API_URL=http://localhost:5010`, run JS/Python samples + one submission end-to-end. Then DSE-28 / DSE-32 on top of `generateAiJson`.
+- **Blockers:** Docker daemon not running on dev machine.
+- **Jira pending (needs approval):** DSE-27 → Done.

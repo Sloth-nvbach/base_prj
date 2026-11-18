@@ -6,7 +6,9 @@
     "setup": "node scripts/setup.mjs",
     "dev": "concurrently -k -n BE,FE -c blue,magenta \"npm run dev --prefix BE\" \"npm run dev --prefix FE\"",
     "seed": "npm run seed --prefix BE",
-    "test": "npm test --prefix BE && npm test --prefix FE",
+    "test": "npm test --prefix BE && npm test --prefix FE && node --test sandbox/sandbox.test.mjs",
+    "sandbox": "node --env-file-if-exists=BE/.env sandbox/server.mjs",
+    "sandbox:pull": "docker pull node:22-alpine && docker pull python:3.12-alpine",
     "lint": "npm run lint --prefix FE",
     "build": "npm run build --prefix BE && npm run build --prefix FE",
     "gen:module": "node scripts/gen-module.mjs"

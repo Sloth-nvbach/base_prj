@@ -33,6 +33,7 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 | `npm run dev` | BE http://localhost:5003 + FE http://localhost:5173 |
 | `npm test` / `npm run lint` / `npm run build` | Full check (BE+FE tests, FE ESLint, typecheck+build) |
 | `npm test --prefix BE -- <pattern>` / `npm test --prefix FE -- <pattern>` | Targeted tests while iterating |
+| `npm run sandbox:pull` then `npm run sandbox` | Pull language images once; start the code runner `sandbox/` on :5010 (needs Docker; reads `BE/.env`) |
 | `npm run gen:module -- <name> [--remove]` | Scaffold (or delete) feature BE+FE+tests from `notes` (kebab-case for multi-word) |
 
 Optional services: no SMTP → emails printed to BE console (dev) / 503 (prod); no Cloudinary → upload 503; no `GEMINI_API_KEY` → chat 503; no `SANDBOX_API_URL` → run 503. Tests never read `BE/.env` (vars in `BE/vitest.config.mts`).
@@ -62,7 +63,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 - **Models:** `{ timestamps: true }`, DB constraints, indexes for default list query, `toJSON` strips `__v` + private fields. User `toJSON` strips `password`, `otpCode`, `otpExpiresAt`, `resetToken`, `resetTokenExpiresAt` (add new ones to `PRIVATE_USER_FIELDS`). `.lean()`/`aggregate()` skip `toJSON` → `.select()` public fields.
 - **Responses:** read/update 200 resource; list 200 paginated; create 201; delete 204; 401/403/404/409/413/429/503 → `{ message }`. All routes under `/api`; `GET /health` → `{ ok: true }`.
 - **Security:** bcrypt (`utils/hash`); OTP/reset single-use; rate limits 300/15 min global, 20/15 min on `/api/auth/*` except `/me` (off in tests), `TRUST_PROXY=1` behind proxy; uploads memory storage, 5 MB, JPEG/PNG/WebP/GIF.
-- **External services:** `sendEmail(to, subject, html)`; `uploadImage(buffer, folder)` / `deleteImage(publicId)` (store `publicId`); Gemini via `@google/genai` only (never `@google/generative-ai`) in `services/ai.service.ts`; sandbox via `services/sandbox.service.ts` + queue `services/queue.service.ts`.
+- **External services:** `sendEmail(to, subject, html)`; `uploadImage(buffer, folder)` / `deleteImage(publicId)` (store `publicId`); Gemini via `@google/genai` only (never `@google/generative-ai`) in `services/ai.service.ts` — new AI features call `generateAiText` / `generateAiJson(request, zodSchema)` (provider-agnostic, input limit → 413, timeout → 504, malformed JSON → 502), never the SDK directly; sandbox via `services/sandbox.service.ts` + queue `services/queue.service.ts`.
 - **Tests:** `tests/unit` (pure fns, middlewares), `tests/integration` (real app + in-memory MongoDB). Use `api()` (`tests/helpers/api.ts`), `createUser({ role, ... })` + `bearerFor(user)`, mocks `email-outbox.ts`, `cloudinary-recorder.ts`, `gemini-recorder.ts`. Model: `tests/integration/notes.test.ts`.
 
 ## 6. Frontend Rules (details: `FE/docs/architecture.md`)
@@ -98,7 +99,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 
 - **Assignments** (`assignment.service.ts`): teachers create/edit/delete own (others' → 404), admins any. Students read published/closed; teachers own (incl. drafts); admins all. Drafts → 404, never 403.
 - **Submissions** (`submission.service.ts`): students only, unlimited attempts. `GET /api/submissions?assignment=<id>` → caller's own, populated. `GET /api/assignments/:id/submission-access` → `{ canSubmit, reason? }`; closed/past deadline blocks `POST /api/submissions` (403).
-- **Runs:** `POST /api/submissions/:id/run` queues a sandbox run (BullMQ), `GET /api/submissions/:id/run-result` polls; max `MAX_CONCURRENT_RUNS_PER_USER` (5) concurrent per user.
+- **Runs:** `POST /api/submissions/:id/run` queues a sandbox run (BullMQ), `GET /api/submissions/:id/run-result` polls; max `MAX_CONCURRENT_RUNS_PER_USER` (5) concurrent per user. The runner is the separate `sandbox/` service (`POST /api/sandbox/run`, one container per test case, JS + Python); keep its limits in `sandbox/runner.mjs`.
 - **AI integration:** dedicated service, keys from `BE/.env` only, provider-swappable, timeouts + input size limits + malformed-response handling. No credentials → build structure + document config, never fake calls.
 - **AI feedback (pedagogy):** explain issue, location, root cause, step-by-step hints, concepts to review, confidence/limits. No full solutions unless assignment policy + Jira require it.
 - **Score suggestions:** per rubric criterion with explanation; AI-suggested ≠ teacher-final; teacher reviews/confirms; never auto-publish.

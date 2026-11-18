@@ -195,6 +195,10 @@ vi.mock('@google/genai', async (importOriginal) => {
       generateContent: async (params: Record<string, unknown>) => {
         geminiRecorder.requests.push(params);
         if (geminiRecorder.error) throw geminiRecorder.error;
+        if (geminiRecorder.hang) {
+          const signal = (params.config as { abortSignal?: AbortSignal } | undefined)?.abortSignal;
+          await new Promise((_, reject) => signal?.addEventListener('abort', () => reject(new Error('aborted'))));
+        }
         return { text: geminiRecorder.replyText };
       }
     };
