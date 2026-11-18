@@ -46,7 +46,7 @@ npm run gen:module -- product            # BE model/validator/service/controller
 npm run gen:module -- product --remove   # undo
 ```
 
-Then change the example fields (`title`, `content`, `tags`). Step-by-step instructions are in [AGENTS.md](AGENTS.md#adding-a-feature-follow-these-steps-in-order).
+Then change the example fields (`title`, `content`, `tags`). Step-by-step instructions are in [AGENTS.md](AGENTS.md#4-adding-a-feature).
 
 ## Scripts (repository root)
 
