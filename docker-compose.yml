@@ -9,5 +9,12 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # Run queue for code execution (DSE-22). Needed only with SANDBOX_API_URL set.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
 volumes:
   mongo-data:

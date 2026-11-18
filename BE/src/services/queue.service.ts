@@ -8,11 +8,11 @@ import { env } from '../config/env';
 import { serviceUnavailable } from '../utils/app-error';
 import type { SandboxRunRequest, SandboxRunResponse } from './sandbox.service';
 
-// Redis connection configuration
-const redisConnection = {
-  host: env.nodeEnv === 'test' ? 'localhost' : (process.env.REDIS_HOST || 'localhost'),
-  port: env.nodeEnv === 'test' ? 6379 : parseInt(process.env.REDIS_PORT || '6379', 10),
-  password: process.env.REDIS_PASSWORD || undefined,
+// Redis connection configuration (shared with the worker)
+export const redisConnection = {
+  host: env.redisHost,
+  port: env.redisPort,
+  password: env.redisPassword,
   maxRetriesPerRequest: null,
   enableReadyCheck: true,
   lazyConnect: true

@@ -126,7 +126,10 @@ export const runSandbox = async ({ code, language, stdin = '', testCases = [] },
       outcomes[index] === 'ok' &&
       (cases[index].expectedOutput === undefined || sameOutput(run.stdout, cases[index].expectedOutput)),
     stdout: run.stdout,
-    stderr: outcomes[index] === 'timeout' ? `${run.stderr}\nTime limit exceeded (${LIMITS.timeoutMs / 1000}s)`.trim() : run.stderr,
+    stderr: {
+      timeout: `${run.stderr}\nTime limit exceeded (${LIMITS.timeoutMs / 1000}s)`.trim(),
+      memory_limit: `${run.stderr}\nMemory limit exceeded (${LIMITS.memory.toUpperCase()}B)`.trim()
+    }[outcomes[index]] ?? run.stderr,
     exitCode: run.exitCode,
     executionTimeMs: run.durationMs,
     memoryUsedMB: 0 // shortcut: not measured, needs `docker stats`/cgroup reads — add when the UI shows memory

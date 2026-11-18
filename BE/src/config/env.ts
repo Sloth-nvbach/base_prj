@@ -38,7 +38,11 @@ const envSchema = z
     SANDBOX_API_URL: optionalString,
     SANDBOX_API_KEY: optionalString,
     // Queue: max concurrent runs per user
-    MAX_CONCURRENT_RUNS_PER_USER: z.coerce.number().int().positive().default(5)
+    MAX_CONCURRENT_RUNS_PER_USER: z.coerce.number().int().positive().default(5),
+    // Redis for the run queue (BullMQ)
+    REDIS_HOST: z.string().trim().min(1).default('localhost'),
+    REDIS_PORT: z.coerce.number().int().positive().default(6379),
+    REDIS_PASSWORD: optionalString
   })
   .superRefine((value, ctx) => {
     const weakSecret = value.JWT_SECRET === PLACEHOLDER_JWT_SECRET || value.JWT_SECRET.length < 32;
@@ -85,7 +89,10 @@ export const parseEnv = (raw: RawEnv) => {
     geminiModel: v.GEMINI_MODEL,
     sandboxApiUrl: v.SANDBOX_API_URL,
     sandboxApiKey: v.SANDBOX_API_KEY,
-    maxConcurrentRunsPerUser: v.MAX_CONCURRENT_RUNS_PER_USER
+    maxConcurrentRunsPerUser: v.MAX_CONCURRENT_RUNS_PER_USER,
+    redisHost: v.REDIS_HOST,
+    redisPort: v.REDIS_PORT,
+    redisPassword: v.REDIS_PASSWORD
   };
 };
 

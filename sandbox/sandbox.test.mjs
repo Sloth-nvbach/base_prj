@@ -39,7 +39,9 @@ test('reports timeout, memory limit and runtime errors', async () => {
   const run = (outcome) => runSandbox(cases('a'), fakeExec({ a: outcome }));
 
   assert.equal((await run({ timedOut: true, exitCode: 137 })).status, 'timeout');
-  assert.equal((await run({ exitCode: 137 })).status, 'memory_limit');
+  const oom = await run({ exitCode: 137 });
+  assert.equal(oom.status, 'memory_limit');
+  assert.match(oom.results[0].stderr, /Memory limit exceeded \(256MB\)/);
   const crashed = await run({ exitCode: 1, stderr: 'SyntaxError: invalid syntax' });
   assert.equal(crashed.status, 'error');
   assert.equal(crashed.results[0].passed, false);

@@ -28,7 +28,7 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 | Command | Description |
 |---------|-------------|
 | `npm run setup` | Install deps, create `BE/.env` & `FE/.env` from examples |
-| `docker compose up -d` | Local MongoDB :27017 |
+| `docker compose up -d` | Local MongoDB :27017 + Redis :6379 (run queue) |
 | `npm run seed` | `demo@example.com/demo1234`, `admin@example.com/admin1234`, `teacher@example.com/teacher1234`, `student01..12@example.com/student1234`. Refuses `NODE_ENV=production` |
 | `npm run dev` | BE http://localhost:5003 + FE http://localhost:5173 |
 | `npm test` / `npm run lint` / `npm run build` | Full check (BE+FE tests, FE ESLint, typecheck+build) |
@@ -99,7 +99,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 
 - **Assignments** (`assignment.service.ts`): teachers create/edit/delete own (others' → 404), admins any. Students read published/closed; teachers own (incl. drafts); admins all. Drafts → 404, never 403.
 - **Submissions** (`submission.service.ts`): students only, unlimited attempts. `GET /api/submissions?assignment=<id>` → caller's own, populated. `GET /api/assignments/:id/submission-access` → `{ canSubmit, reason? }`; closed/past deadline blocks `POST /api/submissions` (403).
-- **Runs:** `POST /api/submissions/:id/run` queues a sandbox run (BullMQ), `GET /api/submissions/:id/run-result` polls; max `MAX_CONCURRENT_RUNS_PER_USER` (5) concurrent per user. The runner is the separate `sandbox/` service (`POST /api/sandbox/run`, one container per test case, JS + Python); keep its limits in `sandbox/runner.mjs`.
+- **Runs:** `POST /api/submissions/:id/run` queues a sandbox run (BullMQ), `GET /api/submissions/:id/run-result` polls; max `MAX_CONCURRENT_RUNS_PER_USER` (5) concurrent per user. `server.ts` starts the BullMQ worker only when `SANDBOX_API_URL` is set (Redis via `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD`). The runner is the separate `sandbox/` service (`POST /api/sandbox/run`, one container per test case, JS + Python); keep its limits in `sandbox/runner.mjs`.
 - **AI integration:** dedicated service, keys from `BE/.env` only, provider-swappable, timeouts + input size limits + malformed-response handling. No credentials → build structure + document config, never fake calls.
 - **AI feedback (pedagogy):** explain issue, location, root cause, step-by-step hints, concepts to review, confidence/limits. No full solutions unless assignment policy + Jira require it.
 - **Score suggestions:** per rubric criterion with explanation; AI-suggested ≠ teacher-final; teacher reviews/confirms; never auto-publish.

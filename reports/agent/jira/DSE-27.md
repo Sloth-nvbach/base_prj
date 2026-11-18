@@ -41,7 +41,7 @@ Jira has no description/AC. Scope taken from Epic DSE-4 (re-scoped 18/11): AI se
 | Timeout / size limit / malformed response | PASS | unit tests |
 
 ## 8. Jira
-- Status before: In Progress. Proposed: → Done (needs approval). Executed: none.
+- Status before: In Progress. Proposed: → Done. Executed 2026-11-18 (user approved): In Progress → Done.
 
 ## 9. GitHub
 - Branch: main

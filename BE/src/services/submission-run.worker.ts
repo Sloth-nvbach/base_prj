@@ -6,19 +6,9 @@ import { Worker, Job } from 'bullmq';
 import { SubmissionModel } from '../models/submission.model';
 import { TestCaseModel } from '../models/testcase.model';
 import { runCodeInSandbox, convertSandboxResults, mapSandboxStatus, type SandboxRunRequest } from './sandbox.service';
-import { getSubmissionRunQueueInstance } from './queue.service';
+import { getSubmissionRunQueueInstance, redisConnection } from './queue.service';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
-
-// Redis connection (same as queue)
-const redisConnection = {
-  host: env.nodeEnv === 'test' ? 'localhost' : (process.env.REDIS_HOST || 'localhost'),
-  port: env.nodeEnv === 'test' ? 6379 : parseInt(process.env.REDIS_PORT || '6379', 10),
-  password: process.env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null,
-  enableReadyCheck: true,
-  lazyConnect: true
-};
 
 /** Job data type. */
 interface RunJobData {

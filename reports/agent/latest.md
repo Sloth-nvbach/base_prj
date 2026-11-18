@@ -2,8 +2,9 @@
 
 > Overwritten each session (≤ 20 lines). Full history lives in `jira/<ID>.md` and `git log`.
 
-- **Last done:** DSE-27 DONE (AI service layer: `generateAiText` / `generateAiJson`). DSE-58 PARTIAL (`sandbox/` Docker runner, unit-tested with fake Docker).
-- **Active task:** DSE-58 — live verification.
-- **Next steps:** start Docker, `npm run sandbox:pull`, `npm run sandbox`, set `SANDBOX_API_URL=http://localhost:5010`, run JS/Python samples + one submission end-to-end. Then DSE-28 / DSE-32 on top of `generateAiJson`.
-- **Blockers:** Docker daemon not running on dev machine.
-- **Jira pending (needs approval):** DSE-27 → Done.
+- **Last done:** DSE-58 verified live on Docker + end-to-end (BE → Redis queue → runner → Mongo). Fixed: run worker never started; Redis config moved to `config/env.ts`; Redis in docker-compose. DSE-27 Done on Jira.
+- **Active task:** none.
+- **Open decisions:** (1) hidden test cases are not graded (`BE/src/services/submission.service.ts:79`); (2) 13 legacy `role: 'user'` accounts in dev DB get 403 on student endpoints.
+- **Jira pending (needs approval):** DSE-58 → Done.
+- **Run locally:** `docker compose up -d`, `npm run sandbox:pull`, `npm run sandbox`, `SANDBOX_API_URL=http://localhost:5010` in `BE/.env`, `npm run dev`.
+- **Next:** DSE-28 / DSE-32 on top of `generateAiJson`.
