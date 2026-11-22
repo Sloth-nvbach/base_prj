@@ -129,3 +129,28 @@ export const computeRubricScore = (criteria: { score: number; maxScore: number; 
   if (totalWeight === 0) return 0;
   return Math.round((criteria.reduce((sum, c) => sum + (c.score / c.maxScore) * c.weight, 0) / totalWeight) * assignmentMax);
 };
+
+export interface Progress {
+  attempts: number;
+  status: 'not_started' | 'submitted' | 'graded';
+  bestScore?: number;
+}
+
+const assignmentIdOf = (s: Submission) => (s.assignment && typeof s.assignment === 'object' ? s.assignment._id : s.assignment);
+
+/** Attempts, best finalized score and overall status per assignment. */
+export const progressByAssignment = (submissions: Submission[]) => {
+  const map = new Map<string, Progress>();
+  for (const s of submissions) {
+    const id = assignmentIdOf(s);
+    if (!id) continue;
+    const p = map.get(id) ?? { attempts: 0, status: 'submitted' as const };
+    p.attempts += 1;
+    if (s.status === 'graded') {
+      p.status = 'graded';
+      p.bestScore = Math.max(p.bestScore ?? 0, s.score ?? 0);
+    }
+    map.set(id, p);
+  }
+  return map;
+};

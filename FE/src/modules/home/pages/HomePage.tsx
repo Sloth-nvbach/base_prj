@@ -7,6 +7,7 @@ import { DataTable } from '@/shared/components/data-table';
 import { useAssignments } from '@/modules/assignment/hooks/use-assignments';
 import type { Assignment } from '@/modules/assignment/types/assignment.types';
 import { StatCard } from '@/shared/components/stat-card';
+import { useMySubmissions, useReviewSubmissions } from '@/modules/submission/hooks/use-submissions';
 
 const teacherQuickActions = [
   { title: 'Create Assignment', description: 'Create a new programming assignment', icon: FileText, to: '/assignments', action: true },
@@ -14,8 +15,7 @@ const teacherQuickActions = [
 ];
 
 const studentQuickActions = [
-  { title: 'My Assignments', description: 'View assigned exercises and deadlines', icon: ClipboardList, to: '/assignments' },
-  { title: 'My Submissions', description: 'View your submission history', icon: FileText, to: '/submissions' },
+  { title: 'My Assignments', description: 'View assigned exercises, deadlines and your submissions', icon: ClipboardList, to: '/my-assignments' },
 ];
 
 const adminQuickActions = [
@@ -31,6 +31,9 @@ export const HomePage = () => {
 
   // Get assignments based on role
   const assignments = useAssignments({ limit: 5, sort: '-createdAt' });
+  const isStudent = role === 'student';
+  const mySubmissions = useMySubmissions({ limit: 1 }, isStudent);
+  const pendingReview = useReviewSubmissions({ limit: 1, status: 'submitted' }, role === 'teacher');
 
   const getQuickActions = () => {
     switch (role) {
@@ -50,12 +53,12 @@ export const HomePage = () => {
           { label: 'My Assignments', icon: ClipboardList, value: assignments.data?.total ?? 0, isLoading: assignments.isPending },
           { label: 'Published', icon: FileText, value: assignments.data?.items.filter(a => a.status === 'published').length ?? 0, isLoading: assignments.isPending },
           { label: 'Drafts', icon: FileText, value: assignments.data?.items.filter(a => a.status === 'draft').length ?? 0, isLoading: assignments.isPending },
-          { label: 'Pending Grading', icon: Clock, value: assignments.data?.items.filter(a => a.status === 'published').length ?? 0, hint: 'Submissions need review', isLoading: assignments.isPending },
+          { label: 'Pending Grading', icon: Clock, value: pendingReview.data?.total ?? 0, hint: 'Submissions need review', isLoading: pendingReview.isPending },
         ];
       case 'student':
         return [
           { label: 'Assigned', icon: ClipboardList, value: assignments.data?.items.filter(a => a.status === 'published').length ?? 0, isLoading: assignments.isPending },
-          { label: 'Submitted', icon: FileText, value: 0, hint: 'Track your submissions', isLoading: assignments.isPending },
+          { label: 'Submitted', icon: FileText, value: mySubmissions.data?.total ?? 0, hint: 'Your submissions', isLoading: mySubmissions.isPending },
           { label: 'Upcoming Deadlines', icon: Clock, value: assignments.data?.items.filter(a => a.status === 'published' && a.dueDate && new Date(a.dueDate) > new Date()).length ?? 0, isLoading: assignments.isPending },
         ];
       case 'admin':
@@ -116,7 +119,7 @@ export const HomePage = () => {
       cell: (a: Assignment) => (
         <div className="flex items-center gap-1 justify-end">
           <Button variant="ghost" size="sm" asChild>
-            <Link to={`/assignments/${a._id}/edit`}>Edit</Link>
+            <Link to={isStudent ? `/my-assignments/${a._id}` : `/assignments/${a._id}`}>{isStudent ? 'Open' : 'Edit'}</Link>
           </Button>
         </div>
       ),

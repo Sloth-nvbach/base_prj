@@ -13,8 +13,8 @@ export const submissionKeys = {
 export const useMySubmissions = (params: MySubmissionsParams, enabled = true) =>
   useQuery({ queryKey: submissionKeys.mine(params), queryFn: () => submissionApi.listMine(params), placeholderData: keepPreviousData, enabled });
 
-export const useReviewSubmissions = (params: ReviewListParams) =>
-  useQuery({ queryKey: submissionKeys.review(params), queryFn: () => submissionApi.listForReview(params), placeholderData: keepPreviousData });
+export const useReviewSubmissions = (params: ReviewListParams, enabled = true) =>
+  useQuery({ queryKey: submissionKeys.review(params), queryFn: () => submissionApi.listForReview(params), placeholderData: keepPreviousData, enabled });
 
 export const useSubmission = (id: string) =>
   useQuery({ queryKey: submissionKeys.detail(id), queryFn: () => submissionApi.get(id), enabled: !!id });
@@ -57,7 +57,8 @@ export const useAiReview = (id: string) => {
 export const useRunResult = (id: string, jobId: string | null) => {
   const invalidate = useInvalidateSubmissions();
   return useQuery({
-    queryKey: [...submissionKeys.detail(id), 'run', jobId],
+    // Outside submissionKeys.all, so the refresh below does not cancel this poll.
+    queryKey: ['submission-run', id, jobId],
     queryFn: async () => {
       const result = await submissionApi.runResult(id, jobId!);
       if (result.status === 'completed' || result.status === 'failed') void invalidate();

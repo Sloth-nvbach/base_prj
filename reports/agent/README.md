@@ -23,3 +23,4 @@ Rules: see `AGENTS.md` §9 (Workflow).
 | DSE-24-26 | Grading API (DSE-24, DSE-26, BE of DSE-23/38) | DONE (BE) |
 | DSE-28-33 | AI review (DSE-28, 31, 32, 33) | DONE (BE) |
 | DSE-35-38 | Teacher grading UI (DSE-35, 36, 37, 38, 25, 23 UI) | DONE (demo) |
+| DSE-53-55 | Student flow (DSE-54, 55; DSE-53 partial) | DONE (demo) |
