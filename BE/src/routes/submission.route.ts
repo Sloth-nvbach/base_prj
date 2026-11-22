@@ -1,5 +1,7 @@
 import { Router, RequestHandler } from 'express';
-import { createSubmission, listSubmissions, runSubmission, getSubmissionRunResult, listForReview, getSubmissionDetail, gradeSubmission, finalizeSubmission } from '../controllers/submission.controller';
+import rateLimit from 'express-rate-limit';
+import { aiReviewConfig } from '../config/ai-review';
+import { createSubmission, listSubmissions, runSubmission, getSubmissionRunResult, listForReview, getSubmissionDetail, gradeSubmission, finalizeSubmission, reviewSubmissionWithAi } from '../controllers/submission.controller';
 import { authGuard } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
@@ -22,6 +24,17 @@ submissionRouter.get('/review', ...staff, validate({ query: reviewListQuerySchem
 submissionRouter.get('/:id', ...read, validate({ params: idParamsSchema }), getSubmissionDetail);
 submissionRouter.post('/:id/grade', ...staff, validate({ params: idParamsSchema, body: gradeSubmissionSchema }), gradeSubmission);
 submissionRouter.post('/:id/finalize', ...staff, validate({ params: idParamsSchema }), finalizeSubmission);
+
+// DSE-32/33: AI review, limited per teacher because the free Gemini quota is small.
+const aiReviewLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: aiReviewConfig.perMinuteLimit,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user!.sub,
+  message: { message: 'Too many AI reviews. Wait a minute and try again.' }
+});
+submissionRouter.post('/:id/ai-review', ...staff, aiReviewLimiter, validate({ params: idParamsSchema }), reviewSubmissionWithAi);
 
 // DSE-22: Run submission against test cases (students only)
 submissionRouter.post('/:id/run', ...write, validate({ params: idParamsSchema, body: runSubmissionSchema }), runSubmission);

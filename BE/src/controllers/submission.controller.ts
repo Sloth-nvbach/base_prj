@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import * as aiReviewService from '../services/ai-review.service';
 import * as gradingService from '../services/grading.service';
 import * as submissionService from '../services/submission.service';
 import { CreateSubmissionInput, ListSubmissionsQuery, RunSubmissionInput, GetRunResultQuery, GradeSubmissionInput, ReviewListQuery } from '../validators/submission.validator';
@@ -47,4 +48,9 @@ export const gradeSubmission = async (req: Request, res: Response) => {
 /** DSE-26: POST /api/submissions/:id/finalize - lock the grade. */
 export const finalizeSubmission = async (req: Request, res: Response) => {
   res.json(await gradingService.finalizeSubmission(actorOf(req), req.params.id as string));
+};
+
+/** DSE-32: POST /api/submissions/:id/ai-review - AI suggestion for the teacher. */
+export const reviewSubmissionWithAi = async (req: Request, res: Response) => {
+  res.json(await aiReviewService.reviewSubmission(actorOf(req), req.params.id as string));
 };

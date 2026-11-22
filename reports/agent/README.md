@@ -21,3 +21,4 @@ Rules: see `AGENTS.md` §9 (Workflow).
 | DSE-27 | Xây dựng dịch vụ kết nối API mô hình AI | DONE |
 | DSE-58 | Implement Docker Sandbox Runner for Code Execution | DONE (demo scope) |
 | DSE-24-26 | Grading API (DSE-24, DSE-26, BE of DSE-23/38) | DONE (BE) |
+| DSE-28-33 | AI review (DSE-28, 31, 32, 33) | DONE (BE) |

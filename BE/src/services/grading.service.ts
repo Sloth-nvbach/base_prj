@@ -30,7 +30,7 @@ export const computeRubricScore = (criteria: Pick<CriterionScore, 'score' | 'max
 };
 
 /** The submission plus its assignment, if the actor may grade it. Others get 404. */
-const loadForStaff = async (actor: Actor, id: string) => {
+export const loadForStaff = async (actor: Actor, id: string) => {
   const submission = await SubmissionModel.findById(id);
   if (!submission) throw notFound('Submission not found');
   const assignment = await AssignmentModel.findById(submission.assignment);
