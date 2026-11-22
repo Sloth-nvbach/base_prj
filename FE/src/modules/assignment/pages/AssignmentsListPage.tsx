@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { DataTable, FilterSelect, SearchInput, TableToolbar } from '@/shared/components/data-table';
 import { EmptyState } from '@/shared/components/empty-state';
@@ -46,7 +47,7 @@ export const AssignmentsListPage = () => {
       header: 'Title',
       cell: (a: Assignment) => (
         <div>
-          <p className="font-medium">{a.title}</p>
+          <Link to={`/assignments/${a._id}`} className="font-medium hover:underline">{a.title}</Link>
           <p className="text-sm text-muted-foreground truncate max-w-xs">{a.description}</p>
         </div>
       ),
