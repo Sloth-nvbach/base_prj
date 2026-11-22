@@ -26,6 +26,7 @@ BE client `sandbox.service.ts` + BullMQ worker (DSE-22) already call `${SANDBOX_
   - Found, NOT fixed (needs decision): `submission.service.ts:79` sends only `isHidden: false` test cases, so hidden test cases are never graded.
   - Found, NOT fixed: local dev DB has 13 legacy users with role `user` (pre-role-change); `npm run seed` skips existing accounts so they stay `user` and get 403 on student endpoints. Updated only `student01@example.com` → `student` for the test.
 - 2026-11-18 (session 3): user decided hidden test cases are graded. `submission.service.ts` now sends all test cases to the sandbox (input/expected output stay hidden from students; per-test stdout/pass is visible in run results). Test: assignment with only hidden cases → run 202 (failed before fix).
+- 2026-11-23 (session 4): TypeScript submissions were sent to the sandbox as JavaScript (`node -e`), so any type annotation failed with SyntaxError. Added sandbox language `typescript` (`node --experimental-strip-types --input-type=commonjs-typescript`, Node 22.23.5 in node:22-alpine); BE maps typescript → typescript. Verified live: typed sum program 2/2, invalid TS → status error with ERR_INVALID_TYPESCRIPT_SYNTAX. Limits: types are stripped not checked; enums/namespaces unsupported.
 
 ## 5. Files Changed
 | File | Action | Description |
@@ -91,3 +92,4 @@ Correction 2026-11-18 (session 2): "API returns correct results", "Timeout/OOM/c
 | 2026-11-18 | Runner + tests | sandbox/, scripts, docs | PARTIAL |
 | 2026-11-18 (2) | Live + E2E verified, worker start fix | server.ts, env, compose, runner | DONE (demo) |
 | 2026-11-18 (3) | Hidden test cases graded | submission.service.ts, submission-run.test.ts | DONE (demo) |
+| 2026-11-23 (4) | TypeScript runs | runner.mjs, sandbox/submission services | DONE |

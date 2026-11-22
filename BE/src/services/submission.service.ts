@@ -96,7 +96,7 @@ export const runSubmission = async (actor: Actor, submissionId: string, input: R
   // Map submission language to sandbox language (TypeScript -> JavaScript)
   const sandboxLanguageMap: Record<string, SandboxRunRequest['language']> = {
     javascript: 'javascript',
-    typescript: 'javascript', // TypeScript runs on Node.js
+    typescript: 'typescript', // Node strips the types (sandbox/runner.mjs)
     python: 'python',
     java: 'java',
     cpp: 'cpp',

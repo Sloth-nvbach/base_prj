@@ -18,6 +18,11 @@ test('docker args lock the container down', () => {
   assert.deepEqual(args.slice(-4), ['python:3.12-alpine', 'python3', '-c', 'print(1)']);
 });
 
+test('typescript runs on node with type stripping', () => {
+  const args = dockerArgs('sbx-2', 'typescript', 'const x: number = 1');
+  assert.deepEqual(args.slice(-6), ['node:22-alpine', 'node', '--experimental-strip-types', '--input-type=commonjs-typescript', '-e', 'const x: number = 1']);
+});
+
 test('compares outputs ignoring trailing whitespace and CRLF', () => {
   assert.ok(sameOutput('3 \r\n', '3'));
   assert.ok(!sameOutput('3', '4'));

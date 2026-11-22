@@ -8,7 +8,7 @@ import { badRequest, notFound, serviceUnavailable, gatewayTimeout } from '../uti
 /** Sandbox API request payload. */
 export interface SandboxRunRequest {
   code: string;
-  language: 'javascript' | 'python' | 'java' | 'cpp' | 'c';
+  language: 'javascript' | 'typescript' | 'python' | 'java' | 'cpp' | 'c';
   stdin?: string;
   testCases: { input: string; expectedOutput: string }[];
 }

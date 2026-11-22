@@ -16,6 +16,8 @@ export const LIMITS = {
 /** Image + command per language. Images must be pulled first (`--pull never` keeps runs inside the time limit). */
 export const LANGUAGES = {
   javascript: { image: 'node:22-alpine', command: (code) => ['node', '-e', code] },
+  // Type annotations are stripped, not type-checked; enums/namespaces (need transform) are not supported.
+  typescript: { image: 'node:22-alpine', command: (code) => ['node', '--experimental-strip-types', '--input-type=commonjs-typescript', '-e', code] },
   python: { image: 'python:3.12-alpine', command: (code) => ['python3', '-c', code] }
 };
 
