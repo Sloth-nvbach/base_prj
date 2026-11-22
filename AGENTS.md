@@ -34,6 +34,7 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 | `npm test` / `npm run lint` / `npm run build` | Full check (BE+FE tests, FE ESLint, typecheck+build) |
 | `npm test --prefix BE -- <pattern>` / `npm test --prefix FE -- <pattern>` | Targeted tests while iterating |
 | `npm run sandbox:pull` then `npm run sandbox` | Pull language images once; start the code runner `sandbox/` on :5010 (needs Docker; reads `BE/.env`) |
+| `npm run cleanup:legacy` | One-off repair of submissions the pre-2026-11-23 run worker marked `graded`/`failed` without a teacher grade (idempotent; real grades untouched) |
 | `npm run e2e` | Live end-to-end check of the grading flow against the running stack (also creates demo data); user guide: `docs/user-guide.md` |
 | `npm run gen:module -- <name> [--remove]` | Scaffold (or delete) feature BE+FE+tests from `notes` (kebab-case for multi-word) |
 

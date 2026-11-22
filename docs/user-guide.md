@@ -87,4 +87,5 @@ Code của sinh viên không bao giờ chạy trên server API. Mỗi test case 
 | Sandbox báo 503 "Docker could not run the code" | Bật Docker Desktop và chạy `npm run sandbox:pull` |
 | AI review báo 429 | Hết lượt miễn phí của Gemini hoặc bấm quá 5 lần/phút; đợi một phút rồi thử lại |
 | AI review báo 503 | Kiểm tra `GEMINI_API_KEY` và `GEMINI_MODEL` trong `BE/.env` |
+| Bài nộp cũ hiện "Graded" nhưng không có điểm | Chạy `npm run cleanup:legacy` một lần: lệnh này đưa các bài do phiên bản cũ tự đánh dấu về trạng thái chờ chấm, không đụng tới điểm giảng viên đã chấm |
 | Tài khoản demo bị 403 trên các trang sinh viên | Chạy lại `npm run seed`: lệnh này sửa role cũ (`user`) của tài khoản demo |
