@@ -4,6 +4,7 @@ import { TestCaseModel } from '../models/testcase.model';
 import { forbidden, notFound, serviceUnavailable } from '../utils/app-error';
 import { paginate } from '../utils/pagination';
 import { CreateSubmissionInput, ListSubmissionsQuery, RunSubmissionInput } from '../validators/submission.validator';
+import { toStudentViews } from './grading.service';
 import { getSubmissionRunQueueInstance } from './queue.service';
 import type { RunJobData } from './queue.service';
 import type { SandboxRunRequest } from './sandbox.service';
@@ -53,11 +54,12 @@ export const createSubmission = async (actor: Actor, input: CreateSubmissionInpu
  */
 export const listSubmissions = async (actor: Actor, { assignment, ...pagination }: ListSubmissionsQuery) => {
   const page = await paginate(SubmissionModel, { student: actor.id, ...(assignment ? { assignment } : {}) }, pagination);
-  page.items = (await SubmissionModel.populate(page.items, {
+  const populated = await SubmissionModel.populate(page.items, {
     path: 'assignment',
     select: 'title status maxScore dueDate'
-  })) as typeof page.items;
-  return page;
+  });
+  // Students never see AI suggestions, draft grades or hidden test output.
+  return { ...page, items: await toStudentViews(populated) };
 };
 
 /**
@@ -139,20 +141,24 @@ export const getSubmissionRunResult = async (actor: Actor, submissionId: string,
   if (!job) throw notFound('Job not found');
   if (job.data.submissionId !== submissionId) throw notFound('Job not found for this submission');
 
-  // Return job status and result
+  // Only the summary of the raw sandbox result: per-test output of hidden cases must not reach students.
+  const [view] = await toStudentViews([submission]);
+  const sandbox = job.result?.sandboxResponse;
   return {
     jobId: job.id,
     status: job.status,
     progress: job.progress,
-    result: job.result,
+    result: job.result ? { success: job.result.success, status: sandbox?.status, summary: sandbox?.summary, error: job.result.error } : undefined,
     error: job.error,
     submission: {
-      status: submission.status,
-      totalScore: submission.totalScore,
-      maxScore: submission.maxScore,
-      testResults: submission.testResults,
-      gradedAt: submission.gradedAt,
-      feedback: submission.feedback
+      status: view.status,
+      runStatus: view.runStatus,
+      runMessage: view.runMessage,
+      totalScore: view.totalScore,
+      maxScore: view.maxScore,
+      testResults: view.testResults,
+      gradedAt: view.gradedAt,
+      feedback: view.feedback
     }
   };
 };

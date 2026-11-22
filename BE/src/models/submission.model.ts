@@ -20,6 +20,29 @@ export interface SubmissionTestResult {
   points: number; // points earned for this test case
 }
 
+/** Outcome of the latest sandbox run (separate from the teacher's grading status). */
+export const RUN_STATUSES = ['completed', 'timeout', 'error', 'memory_limit'] as const;
+export type RunStatus = (typeof RUN_STATUSES)[number];
+
+/** One rubric criterion score, snapshotted at grading time (DSE-24). */
+export interface CriterionScore {
+  criterionId: Types.ObjectId;
+  name: string;
+  score: number;
+  maxScore: number;
+  weight: number;
+}
+
+/** Audit entry for every saved draft and the final grade (DSE-25/26). */
+export interface GradeHistoryEntry {
+  score: number;
+  criterionScores: CriterionScore[];
+  feedback: string;
+  by: Types.ObjectId;
+  at: Date;
+  final: boolean;
+}
+
 export interface SubmissionDocument extends mongoose.Document {
   assignment: Types.ObjectId;
   student: Types.ObjectId;
@@ -45,6 +68,15 @@ export interface SubmissionDocument extends mongoose.Document {
   gradedAt?: Date;
   /** Who graded the submission (teacher/admin). */
   gradedBy?: Types.ObjectId;
+  /** Latest sandbox run outcome and message (DSE-22/58). */
+  runStatus?: RunStatus;
+  runMessage?: string;
+  lastRunAt?: Date;
+  /** Teacher's per-criterion scores (draft until status is 'graded'). */
+  criterionScores: CriterionScore[];
+  /** AI suggestion for the teacher (DSE-32). Never shown to students, never the final score. */
+  aiReview?: Record<string, unknown>;
+  gradeHistory: GradeHistoryEntry[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +91,29 @@ const submissionTestResultSchema = new Schema<SubmissionTestResult>(
     executionTimeMs: { type: Number, required: true, min: 0 },
     memoryUsedMB: { type: Number, required: true, min: 0 },
     points: { type: Number, required: true, min: 0 }
+  },
+  { _id: false }
+);
+
+const criterionScoreSchema = new Schema<CriterionScore>(
+  {
+    criterionId: { type: Schema.Types.ObjectId, required: true },
+    name: { type: String, required: true },
+    score: { type: Number, required: true, min: 0 },
+    maxScore: { type: Number, required: true, min: 0 },
+    weight: { type: Number, required: true, min: 0 }
+  },
+  { _id: false }
+);
+
+const gradeHistorySchema = new Schema<GradeHistoryEntry>(
+  {
+    score: { type: Number, required: true, min: 0 },
+    criterionScores: { type: [criterionScoreSchema], default: [] },
+    feedback: { type: String, default: '' },
+    by: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    at: { type: Date, required: true },
+    final: { type: Boolean, required: true }
   },
   { _id: false }
 );
@@ -79,7 +134,13 @@ const submissionSchema = new Schema<SubmissionDocument>(
     totalScore: { type: Number, min: 0 },
     maxScore: { type: Number, min: 0 },
     gradedAt: { type: Date },
-    gradedBy: { type: Schema.Types.ObjectId, ref: 'User' }
+    gradedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    runStatus: { type: String, enum: RUN_STATUSES },
+    runMessage: { type: String, maxlength: 2000 },
+    lastRunAt: { type: Date },
+    criterionScores: { type: [criterionScoreSchema], default: [] },
+    aiReview: { type: Schema.Types.Mixed },
+    gradeHistory: { type: [gradeHistorySchema], default: [] }
   },
   {
     timestamps: true,

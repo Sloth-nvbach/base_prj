@@ -1,10 +1,10 @@
 import { Router, RequestHandler } from 'express';
-import { createSubmission, listSubmissions, runSubmission, getSubmissionRunResult } from '../controllers/submission.controller';
+import { createSubmission, listSubmissions, runSubmission, getSubmissionRunResult, listForReview, getSubmissionDetail, gradeSubmission, finalizeSubmission } from '../controllers/submission.controller';
 import { authGuard } from '../middlewares/auth.middleware';
 import { requireRole } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import { idParamsSchema } from '../validators/common.validator';
-import { createSubmissionSchema, listSubmissionsQuerySchema, runSubmissionSchema, getRunResultQuerySchema } from '../validators/submission.validator';
+import { createSubmissionSchema, listSubmissionsQuerySchema, runSubmissionSchema, getRunResultQuerySchema, reviewListQuerySchema, gradeSubmissionSchema } from '../validators/submission.validator';
 
 export const submissionRouter = Router();
 
@@ -12,9 +12,16 @@ export const submissionRouter = Router();
 // history (teachers and admins simply have none).
 const read: RequestHandler[] = [authGuard, requireRole('student', 'teacher', 'admin')];
 const write: RequestHandler[] = [authGuard, requireRole('student')];
+const staff: RequestHandler[] = [authGuard, requireRole('teacher', 'admin')];
 
 submissionRouter.get('/', ...read, validate({ query: listSubmissionsQuerySchema }), listSubmissions);
 submissionRouter.post('/', ...write, validate({ body: createSubmissionSchema }), createSubmission);
+
+// DSE-38/23/24/26: grading (teachers own assignments, admins all). '/review' must stay before '/:id'.
+submissionRouter.get('/review', ...staff, validate({ query: reviewListQuerySchema }), listForReview);
+submissionRouter.get('/:id', ...read, validate({ params: idParamsSchema }), getSubmissionDetail);
+submissionRouter.post('/:id/grade', ...staff, validate({ params: idParamsSchema, body: gradeSubmissionSchema }), gradeSubmission);
+submissionRouter.post('/:id/finalize', ...staff, validate({ params: idParamsSchema }), finalizeSubmission);
 
 // DSE-22: Run submission against test cases (students only)
 submissionRouter.post('/:id/run', ...write, validate({ params: idParamsSchema, body: runSubmissionSchema }), runSubmission);

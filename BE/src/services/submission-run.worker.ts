@@ -77,7 +77,7 @@ export const createSubmissionRunWorker = (): Worker<RunJobData, RunJobResult> =>
         await job.updateProgress(70);
 
         // Map sandbox status to submission status
-        const { submissionStatus, message } = mapSandboxStatus(sandboxResponse.status);
+        const { message } = mapSandboxStatus(sandboxResponse.status);
 
         // Convert sandbox results to submission format with proper points
         // Fetch test cases to get their points
@@ -100,19 +100,19 @@ export const createSubmissionRunWorker = (): Worker<RunJobData, RunJobResult> =>
 
         await job.updateProgress(90);
 
-        // Update submission with results
+        // Store the run outcome only: grading status, score and feedback belong to the teacher.
         await SubmissionModel.findByIdAndUpdate(submissionId, {
-          status: submissionStatus,
+          runStatus: sandboxResponse.status,
+          runMessage: message,
+          lastRunAt: new Date(),
           testResults,
           totalScore: finalTotalScore,
-          maxScore: finalMaxScore,
-          gradedAt: new Date(),
-          feedback: message
+          maxScore: finalMaxScore
         });
 
         await job.updateProgress(100);
 
-        logger.info('Submission run completed', { submissionId, jobId: job.id, status: submissionStatus, totalScore: finalTotalScore });
+        logger.info('Submission run completed', { submissionId, jobId: job.id, runStatus: sandboxResponse.status, totalScore: finalTotalScore });
 
         return {
           success: true,
@@ -124,9 +124,9 @@ export const createSubmissionRunWorker = (): Worker<RunJobData, RunJobResult> =>
         // Update submission with error status
         try {
           await SubmissionModel.findByIdAndUpdate(submissionId, {
-            status: 'failed',
-            feedback: (error as Error).message,
-            gradedAt: new Date()
+            runStatus: 'error',
+            runMessage: (error as Error).message.slice(0, 2000),
+            lastRunAt: new Date()
           });
         } catch (updateError) {
           logger.error('Failed to update submission with error status', { submissionId, error: (updateError as Error).message });

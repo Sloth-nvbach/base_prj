@@ -68,6 +68,7 @@ Correction 2026-11-18 (session 2): "API returns correct results", "Timeout/OOM/c
 ## 8. Jira
 - Status before: In Progress. Proposed: keep In Progress until real Docker verification. Executed: none.
 - (session 2) Proposed: In Progress → Done (demo scope). Needs approval.
+- 2026-11-18 (session 3, user approved): In Progress → Done (demo scope).
 
 ## 9. GitHub
 - Branch: main
