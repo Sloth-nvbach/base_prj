@@ -1,6 +1,6 @@
 # AGENTS.md — Instructions for AI Coding Agents
 
-> Single source of truth for AI agents working in this repo. Loaded every session — keep it short: one-line rules here, details and code examples in `BE/docs/architecture.md` and `FE/docs/architecture.md` (read the section you need, when you need it). Student guide (Vietnamese): `docs/vibe-coding-guide.md`.
+> Single source of truth for AI agents working in this repo. Loaded every session — keep it short: one-line rules here, details and code examples in `BE/docs/architecture.md`, `FE/docs/architecture.md` and `docs/domain.md` (read the section you need, when you need it). Student guide (Vietnamese): `docs/vibe-coding-guide.md`.
 
 ## 1. Project
 
@@ -20,7 +20,7 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 3. **Register, don't wire by hand.** BE routers → `BE/src/app.ts`. FE features → `FE/src/app/modules.ts`. Never add feature routes to `FE/src/App.tsx`.
 4. **Never leak private data.** No passwords, OTP/reset tokens, API keys in responses, logs, or FE code.
 5. **Do NOT change OTP functions:** `BE/src/utils/otp.ts`, `createUserWithOtp`, `issueOtpForUser`, `issueResetToken`, OTP/reset handlers in `auth.controller.ts`.
-6. **Every change has tests.** Never weaken/delete tests to pass. Iterate with targeted tests; full `npm test` + `npm run lint` + `npm run build` once at the end (§9).
+6. **Every change has tests.** Never weaken/delete tests to pass. Iterate with targeted tests; full `npm run check` once at the end (§9).
 7. **Keep docs true.** Changed a rule/helper/convention → update this file + matching `docs/architecture.md` in the same change.
 
 ## 3. Commands (repo root)
@@ -31,7 +31,7 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 | `docker compose up -d` | Local MongoDB :27017 + Redis :6379 (run queue) |
 | `npm run seed` | Creates missing demo accounts and repairs demo accounts with a legacy role: `demo@example.com/demo1234`, `admin@example.com/admin1234`, `teacher@example.com/teacher1234`, `student01..12@example.com/student1234`. Refuses `NODE_ENV=production` |
 | `npm run dev` | BE http://localhost:5003 + FE http://localhost:5173 |
-| `npm test` / `npm run lint` / `npm run build` | Full check (BE+FE tests, FE ESLint, typecheck+build) |
+| `npm run check` | Full check with short output (BE+FE+sandbox tests, FE ESLint, typecheck+build); prints the log tail only for the failing step. Same as `npm test` && `npm run lint` && `npm run build` |
 | `npm test --prefix BE -- <pattern>` / `npm test --prefix FE -- <pattern>` | Targeted tests while iterating |
 | `npm run sandbox:pull` then `npm run sandbox` | Pull language images once; start the code runner `sandbox/` on :5010 (needs Docker; reads `BE/.env`) |
 | `npm run cleanup:legacy` | One-off repair of submissions the pre-2026-11-23 run worker marked `graded`/`failed` without a teacher grade (idempotent; real grades untouched) |
@@ -87,35 +87,22 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 - **Admin:** `/admin` uses `AdminLayout` (sidebar); endpoints under `/api/admin` in `routes/admin.route.ts`. **Admins only (DSE-12):** `requireRole('admin')` in `admin.route.ts` + `<ProtectedRoute roles={['admin']}>` around `AdminLayout` in `FE/src/App.tsx` — keep both. Keep checks that an account can't delete itself or drop its own admin role (`admin-user.service.ts`). Deleting a user deletes their notes + avatar. New admin page: BE list with `sortSchema`/`optionalBooleanQuerySchema`/`paginate`/`bulkIdsSchema`; FE `adminRoutes` + `adminNavItems`, built like `AdminUsersPage`.
 - **Chat:** widget `FE/src/modules/chat/` (texts in `chat.config.ts`); `POST /api/chat` `{ messages: [{ role: 'user'|'model', text }] }` → `{ reply }`, stateless, `authGuard`, 10 req/min/user. Personality in `BE/src/config/chatbot.ts`. `GEMINI_MODEL` default `gemini-3.5-flash-lite`, thinking `LOW`. Errors: no key/bad key/model → 503, quota → 429, other → 502.
 
-## 8. Smart EdTech Domain
+## 8. Smart EdTech Domain (details: `docs/domain.md`)
 
-| Model | Key fields / rules |
-|-------|--------------------|
-| `Course` | `code`, `name`, `description`, `createdBy` |
-| `Class` | `course`, `teacher`, `students[]`, `semester`, `schedule` |
-| `Enrollment` | `student`, `class`, `enrolledAt`, `status` |
-| `Assignment` | `title`, `description`, `instructions`, `createdBy`, `dueDate?`, `maxScore` ≥ 0 (100), status `draft\|published\|closed` |
-| `Submission` | `assignment`, `student`, `code`, `language` enum, `submittedAt`, status `submitted\|graded`, teacher-confirmed `score` ≥ 0 (≤ `maxScore`, never the AI suggestion), `feedback`. History kept (not unique) |
-| `Rubric` | criteria (name, description, weight auto-normalized to Σ=100); default template endpoint |
-| `TestCase` / `TestResult` | `assignment`, `input`, `expectedOutput`, `isHidden` (input/expected output never shown to students, but always graded in runs), `points` / per-submission results |
+Models: `Course`, `Class`, `Enrollment`, `Assignment`, `Submission`, `Rubric`, `TestCase`/`TestResult`. Read `docs/domain.md` before touching assignments, submissions, grading, runs, AI review or their FE pages. Always-on invariants:
 
-- **Assignments** (`assignment.service.ts`): teachers create/edit/delete own (others' → 404), admins any. Students read published/closed; teachers own (incl. drafts); admins all. Drafts → 404, never 403.
-- **Submissions** (`submission.service.ts`): students only, unlimited attempts. `GET /api/submissions?assignment=<id>` → caller's own, populated. `GET /api/assignments/:id/submission-access` → `{ canSubmit, reason? }`; closed/past deadline blocks `POST /api/submissions` (403). Students only ever get `toStudentView` (`grading.service.ts`): no `aiReview`/`gradeHistory`, no score/feedback before `graded`, hidden test output blanked.
-- **Grading** (`grading.service.ts`, teacher of the assignment or admin, others 404): `GET /api/submissions/review` (queue), `GET /api/submissions/:id` (submission + assignment + student + test cases + rubric; students: own only), `POST /:id/grade` (draft; rubric → `criterionScores` per criterion, score = Σ(score/max·weight)/Σweight·assignment.maxScore; no rubric → `score`), `POST /:id/finalize` (status `graded`, `gradedAt/By`, locked except admins, emails student). Every save appends `gradeHistory`. Runs never change `status`/`score`/`feedback` — they write `runStatus`, `runMessage`, `testResults`, `totalScore`.
-- **Runs:** `POST /api/submissions/:id/run` queues a sandbox run (BullMQ), `GET /api/submissions/:id/run-result` polls; max `MAX_CONCURRENT_RUNS_PER_USER` (5) concurrent per user. `server.ts` starts the BullMQ worker only when `SANDBOX_API_URL` is set (Redis via `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD`). The runner is the separate `sandbox/` service (`POST /api/sandbox/run`, one container per test case, JavaScript, TypeScript (types stripped, not checked), Python); keep its limits in `sandbox/runner.mjs`.
-- **AI review** (`ai-review.service.ts`, prompt in `config/ai-review.ts`): `POST /api/submissions/:id/ai-review` (assignment teacher/admin, 5/min/user) → issues (lines, snippet, cause, fix steps, concepts), per-criterion suggestions (unknown ids dropped, scores clamped), `suggestedScore`, draft feedback, confidence. Stored in `submission.aiReview` only — never the score; hidden test inputs never sent.
-- **FE pages:** teacher/admin — `/assignments`, `/assignments/:id` (details, test cases, rubric tabs), `/submissions` (grading queue), `/submissions/:id/grade` (split screen: problem + code | test results, AI review, grade form). Students — `/my-assignments` (status, attempts, best score, due colors), `/my-assignments/:id` (problem, submit → auto run, history), `/my-submissions/:id` (code, test results, rubric, feedback; polls `?job=`). Module `FE/src/modules/submission/` (`TestResultsTable`, `CodeViewer`, `AiReviewPanel`, `GradingPanel`; `computeRubricScore` mirrors the BE formula).
-- **AI integration:** dedicated service, keys from `BE/.env` only, provider-swappable, timeouts + input size limits + malformed-response handling. No credentials → build structure + document config, never fake calls.
-- **AI feedback (pedagogy):** explain issue, location, root cause, step-by-step hints, concepts to review, confidence/limits. No full solutions unless assignment policy + Jira require it.
-- **Score suggestions:** per rubric criterion with explanation; AI-suggested ≠ teacher-final; teacher reviews/confirms; never auto-publish.
-- **Code safety:** student code is untrusted — never execute on the Node server; only via sandbox (limits, timeouts, no network). Static analysis tasks don't need execution.
+- **Access:** other users' resources and drafts → 404, never 403. Students only ever get `toStudentView` (`grading.service.ts`).
+- **Scores:** `score` is teacher-confirmed only (≤ `maxScore`); AI suggestions live in `submission.aiReview`, never auto-published. Runs never change `status`/`score`/`feedback`.
+- **Hidden tests:** input/expected output never shown to students nor sent to AI, but always graded in runs.
+- **Code safety:** student code is untrusted — never execute on the Node server; only via the `sandbox/` service (limits in `sandbox/runner.mjs`).
+- **AI:** keys from `BE/.env` only, via `ai.service.ts`; no credentials → build structure + document config, never fake calls. Feedback gives hints and concepts, no full solutions unless assignment policy + Jira require it.
 
 ## 9. Workflow (per Jira task)
 
 1. **Context (cheap first):** `git status` + `git log -5`. Read `reports/agent/latest.md`, then only *Next Steps* + last *Session History* row of `reports/agent/jira/<ID>.md` if it exists. Don't re-read README/AGENTS.md.
 2. **Jira (project DSE, cloudId `https://nvb3117.atlassian.net`, never call `getAccessibleAtlassianResources`, `maxResults: 10`):** read the issue with compact view (summary, description, AC, comments, status). Open Epic/linked/sprint only when the AC or description references them.
 3. **Implement** within task scope; run targeted tests while iterating.
-4. **Verify once at the end:** `npm test` && `npm run lint` && `npm run build`. Docs-only changes skip this.
+4. **Verify once at the end:** `npm run check`. Docs-only changes skip this.
 5. **Report:** new task → copy `reports/agent/TEMPLATE.md` to `reports/agent/jira/<ID>.md` and add it to `reports/agent/README.md`. Append a session entry (never delete old entries; fix wrong info with a dated correction). Overwrite `latest.md` (≤ 20 lines: active task, status, next steps, blockers). Don't record commit hashes — `git log` is the truth.
 6. **Commit & push (no approval needed) after step 4 passes:** review `git diff`, stage only task files (never `.env`, secrets, personal data, junk generated files), Conventional Commit (`feat:`, `fix:`, `docs:`…), code + report in **one** commit, push to the current branch.
 7. **Handoff:** Jira ID + DONE/PARTIAL/BLOCKED, files changed, test results, report path, Jira pending actions, commit/push result, blockers. Keep "code done" ≠ "Jira updated" ≠ "committed" ≠ "pushed" distinct; never claim unverified results.
@@ -125,5 +112,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 - High-risk Git: force-push, delete branch/repo, rewrite history, merge PR, branch protection, prod deploy, overwriting/deleting the user's uncommitted changes, auto switching branch. Push rejected → fetch & analyze, then ask; never auto reset/rebase/force.
 
 **Blocked / missing tools or services:** do the independent safe parts, document limits in the report, don't claim success.
+
+**Process skills** (e.g. superpowers brainstorming/plans): this workflow takes precedence; use them only when the user asks.
 
 **Done** = AC met, no placeholders in main flow, validation/errors/security handled, full check passed, no regressions, docs + report updated, Jira/Git states reported accurately.

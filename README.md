@@ -60,6 +60,7 @@ Then change the example fields (`title`, `content`, `tags`). Step-by-step instru
 | `npm test` | Backend tests (Vitest + in-memory MongoDB), then frontend tests (Vitest + Testing Library) |
 | `npm run lint` | ESLint on the frontend |
 | `npm run build` | Typecheck and build both apps |
+| `npm run check` | Tests + lint + build with short output (log tail only for the failing step) |
 | `npm run gen:module -- <name>` | Scaffold a feature from the `notes` module |
 
 Each app also has its own scripts (`cd BE && npm run dev`, `cd FE && npm run test:watch`, ...).
