@@ -83,7 +83,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 
 ## 7. Admin Area & Chat
 
-- **Admin:** `/admin` uses `AdminLayout` (sidebar); endpoints under `/api/admin` in `routes/admin.route.ts`. **Base default: every signed-in account can use it.** Lock = `requireRole('admin')` in `admin.route.ts` + `<ProtectedRoute roles={['admin']}>` around `AdminLayout` in `FE/src/App.tsx`. Keep checks that an account can't delete itself or drop its own admin role (`admin-user.service.ts`). Deleting a user deletes their notes + avatar. New admin page: BE list with `sortSchema`/`optionalBooleanQuerySchema`/`paginate`/`bulkIdsSchema`; FE `adminRoutes` + `adminNavItems`, built like `AdminUsersPage`.
+- **Admin:** `/admin` uses `AdminLayout` (sidebar); endpoints under `/api/admin` in `routes/admin.route.ts`. **Admins only (DSE-12):** `requireRole('admin')` in `admin.route.ts` + `<ProtectedRoute roles={['admin']}>` around `AdminLayout` in `FE/src/App.tsx` — keep both. Keep checks that an account can't delete itself or drop its own admin role (`admin-user.service.ts`). Deleting a user deletes their notes + avatar. New admin page: BE list with `sortSchema`/`optionalBooleanQuerySchema`/`paginate`/`bulkIdsSchema`; FE `adminRoutes` + `adminNavItems`, built like `AdminUsersPage`.
 - **Chat:** widget `FE/src/modules/chat/` (texts in `chat.config.ts`); `POST /api/chat` `{ messages: [{ role: 'user'|'model', text }] }` → `{ reply }`, stateless, `authGuard`, 10 req/min/user. Personality in `BE/src/config/chatbot.ts`. `GEMINI_MODEL` default `gemini-3.5-flash-lite`, thinking `LOW`. Errors: no key/bad key/model → 503, quota → 429, other → 502.
 
 ## 8. Smart EdTech Domain

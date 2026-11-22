@@ -52,7 +52,7 @@ Lệnh sẽ từ chối những tên trùng với code có sẵn, ví dụ `clas
 
 Đăng nhập bằng `admin@example.com` / `admin1234`, rồi bấm **Admin** trên thanh menu để vào http://localhost:5173/admin.
 
-> ⚠️ Trong base này, **tài khoản nào đăng nhập cũng vào được trang admin** để các bạn dễ thử. Như vậy ai cũng sửa hoặc xoá được người dùng khác. Trước khi cho người thật dùng, hãy khoá lại cho riêng admin bằng prompt: *"Chỉ cho admin vào trang admin: dùng `requireRole('admin')` trong `BE/src/routes/admin.route.ts` và `roles={['admin']}` cho route admin trong `FE/src/App.tsx`, cập nhật test."*
+> 🔒 Trong dự án này **chỉ tài khoản admin vào được trang admin** (DSE-12): backend dùng `requireRole('admin')` trong `BE/src/routes/admin.route.ts`, frontend bọc `AdminLayout` bằng `<ProtectedRoute roles={['admin']}>` trong `FE/src/App.tsx`. Tài khoản khác nhận lỗi 403 hoặc bị chuyển về trang chủ.
 
 - **Dashboard**: các con số tổng quan (số người dùng, admin, đã xác thực email, số ghi chú) và danh sách người dùng mới.
 - **Users**: quản lý người dùng. Có tìm theo email hoặc tên, lọc theo role và trạng thái xác thực, sắp xếp khi bấm tiêu đề cột, phân trang, sửa (tên, role, xác thực, OTP khi đăng nhập), xoá từng người hoặc chọn nhiều người để xoá cùng lúc. Admin không thể tự xoá mình hay tự bỏ quyền admin của mình.
