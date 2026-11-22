@@ -29,11 +29,12 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 |---------|-------------|
 | `npm run setup` | Install deps, create `BE/.env` & `FE/.env` from examples |
 | `docker compose up -d` | Local MongoDB :27017 + Redis :6379 (run queue) |
-| `npm run seed` | `demo@example.com/demo1234`, `admin@example.com/admin1234`, `teacher@example.com/teacher1234`, `student01..12@example.com/student1234`. Refuses `NODE_ENV=production` |
+| `npm run seed` | Creates missing demo accounts and repairs demo accounts with a legacy role: `demo@example.com/demo1234`, `admin@example.com/admin1234`, `teacher@example.com/teacher1234`, `student01..12@example.com/student1234`. Refuses `NODE_ENV=production` |
 | `npm run dev` | BE http://localhost:5003 + FE http://localhost:5173 |
 | `npm test` / `npm run lint` / `npm run build` | Full check (BE+FE tests, FE ESLint, typecheck+build) |
 | `npm test --prefix BE -- <pattern>` / `npm test --prefix FE -- <pattern>` | Targeted tests while iterating |
 | `npm run sandbox:pull` then `npm run sandbox` | Pull language images once; start the code runner `sandbox/` on :5010 (needs Docker; reads `BE/.env`) |
+| `npm run e2e` | Live end-to-end check of the grading flow against the running stack (also creates demo data); user guide: `docs/user-guide.md` |
 | `npm run gen:module -- <name> [--remove]` | Scaffold (or delete) feature BE+FE+tests from `notes` (kebab-case for multi-word) |
 
 Optional services: no SMTP → emails printed to BE console (dev) / 503 (prod); no Cloudinary → upload 503; no `GEMINI_API_KEY` → chat 503; no `SANDBOX_API_URL` → run 503. Tests never read `BE/.env` (vars in `BE/vitest.config.mts`).

@@ -5,7 +5,7 @@
 import mongoose from 'mongoose';
 import { connectDb } from '../config/db';
 import { env } from '../config/env';
-import { UserModel } from '../models/user.model';
+import { USER_ROLES, UserModel } from '../models/user.model';
 import { hashPassword } from '../utils/hash';
 
 export const DEMO_ACCOUNTS = [
@@ -32,7 +32,11 @@ export const seedDemoAccounts = async () => {
   const accounts = [...DEMO_ACCOUNTS.map((account) => ({ ...account, isEmailVerified: true })), ...DEMO_STUDENTS];
   for (const account of accounts) {
     const exists = await UserModel.exists({ email: account.email });
-    if (exists) continue;
+    if (exists) {
+      // Demo accounts created before the student/teacher/admin roles keep an unknown role and get 403 everywhere.
+      await UserModel.updateOne({ email: account.email, role: { $nin: USER_ROLES } }, { role: account.role });
+      continue;
+    }
 
     await UserModel.create({
       email: account.email,

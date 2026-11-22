@@ -34,7 +34,7 @@ export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProp
             <div className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
               <ShieldCheck className="size-4" />
             </div>
-            <span className="hidden sm:inline">MERN Auth</span>
+            <span className="hidden sm:inline">Smart EdTech</span>
           </Link>
 
           {/* Nav links */}

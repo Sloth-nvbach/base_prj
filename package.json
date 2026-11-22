@@ -11,7 +11,8 @@
     "sandbox:pull": "docker pull node:22-alpine && docker pull python:3.12-alpine",
     "lint": "npm run lint --prefix FE",
     "build": "npm run build --prefix BE && npm run build --prefix FE",
-    "gen:module": "node scripts/gen-module.mjs"
+    "gen:module": "node scripts/gen-module.mjs",
+    "e2e": "node scripts/e2e-flow.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",

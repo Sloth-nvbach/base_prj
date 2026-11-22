@@ -6,6 +6,8 @@ A starter for student projects: authentication, profile, image upload, and a com
 - `BE/` — Node.js + Express 5 + MongoDB (Mongoose) + Zod
 - `FE/` — React 19 + Vite + TanStack Query + shadcn/ui + Tailwind CSS 4
 
+**Smart EdTech** (AI-assisted grading for programming courses) is built on this base — install and usage guide (Vietnamese): **[docs/user-guide.md](docs/user-guide.md)**.
+
 Hướng dẫn tiếng Việt cho học sinh: **[docs/vibe-coding-guide.md](docs/vibe-coding-guide.md)**.
 Instructions for AI agents: **[AGENTS.md](AGENTS.md)**.
 
@@ -31,7 +33,7 @@ No email or Cloudinary account is needed to start:
 - Register with email OTP verification, login, forgot / reset password
 - Optional email code at login, off by default, toggled per user on **Profile → Security**
 - Profile editing and avatar upload (Cloudinary)
-- Roles (`user`, `admin`) with `requireRole` on the backend and role-gated routes on the frontend
+- Roles (`student`, `teacher`, `admin`) with `requireRole` on the backend and role-gated routes on the frontend
 - `notes` reference module: paginated list, search, tag filter, create / edit / delete, owner-only access, admin view of all notes
 - Admin area (`/admin`, open to every signed-in account in this base; one line on each side locks it to admins): sidebar layout, dashboard with stats, user management (search, filters, sortable
   table, pagination, edit role / verification, delete, bulk delete) built from reusable `DataTable`, `SearchInput`,

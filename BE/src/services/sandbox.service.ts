@@ -132,7 +132,7 @@ export const mapSandboxStatus = (sandboxStatus: SandboxRunResponse['status']): {
 } => {
   switch (sandboxStatus) {
     case 'completed':
-      return { submissionStatus: 'graded', message: 'Code executed successfully' };
+      return { submissionStatus: 'graded', message: 'Code ran to the end; see each test case for the result' };
     case 'timeout':
       return { submissionStatus: 'failed', message: 'Execution timed out (10s limit)' };
     case 'memory_limit':

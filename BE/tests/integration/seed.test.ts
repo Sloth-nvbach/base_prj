@@ -28,4 +28,14 @@ describe('seedDemoAccounts', () => {
     expect(await seedDemoAccounts()).toEqual([]);
     expect(await UserModel.countDocuments()).toBe(DEMO_ACCOUNTS.length + DEMO_STUDENTS.length);
   });
+
+  it('repairs demo accounts left with a pre-role-change role, keeps valid roles', async () => {
+    await seedDemoAccounts();
+    await UserModel.collection.updateOne({ email: 'student01@example.com' }, { $set: { role: 'user' } });
+    await UserModel.collection.updateOne({ email: 'student02@example.com' }, { $set: { role: 'teacher' } });
+
+    await seedDemoAccounts();
+    expect((await UserModel.findOne({ email: 'student01@example.com' }))!.role).toBe('student');
+    expect((await UserModel.findOne({ email: 'student02@example.com' }))!.role).toBe('teacher');
+  });
 });
