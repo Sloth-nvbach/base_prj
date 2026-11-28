@@ -4,7 +4,7 @@
 - Jira ID: DSE-59 (https://nvb3117.atlassian.net/browse/DSE-59)
 - Project / Sprint: DSE / N/A
 - Date: 2026-11-27 → 2026-11-28
-- Status: DONE (code); Jira To Do
+- Status: DONE; Jira Done
 - Repository / Branch: base_prj / main
 
 ## 2. Objective & Acceptance Criteria
@@ -63,10 +63,10 @@ Yêu cầu của người dùng: thiết kế lại UI toàn bộ FE theo phong 
 | AC5 check | PASS | `npm run check` 2026-11-28 |
 
 ## 8. Jira
-- Status before/after: chưa tồn tại → tạo mới, trạng thái To Do (2026-11-28).
+- Status before/after: chưa tồn tại → To Do → Done (2026-11-28, người dùng duyệt).
 - Proposed actions: tạo Task trong DSE (bản xem trước đã gửi người dùng 2026-11-28).
 - Approved & executed: người dùng duyệt 2026-11-28 → đã tạo DSE-59.
-- Still pending: chuyển trạng thái DSE-59 (cần người dùng duyệt riêng).
+- Still pending: không.
 
 ## 9. GitHub
 - Branch: main
@@ -83,7 +83,6 @@ Yêu cầu của người dùng: thiết kế lại UI toàn bộ FE theo phong 
 ## 11. Next Steps
 - Người dùng tắt các tiến trình dev cũ, chạy lại `npm run dev` (FE phải ở 5173).
 - Chọn một MongoDB: hoặc `MONGO_URI=mongodb://127.0.0.1:27017/...` (Windows `mongod`, nhiều dữ liệu hơn) hoặc tắt `mongod` Windows và dùng Docker.
-- Chuyển trạng thái DSE-59 khi người dùng duyệt.
 
 ## 12. Session History
 | Date | Progress | Changes | Status |
@@ -91,3 +90,4 @@ Yêu cầu của người dùng: thiết kế lại UI toàn bộ FE theo phong 
 | 2026-11-27 | Kế hoạch thiết kế, token, primitive, layout, các trang, review ảnh | ~60 file FE + docs | In progress |
 | 2026-11-28 | Sửa lỗi phát hiện khi review, test Home admin, `npm run check` PASS; chẩn đoán lỗi đăng nhập (cổng/CORS + 2 MongoDB) | Báo cáo này | DONE (code), Jira pending |
 | 2026-11-28 | Tạo DSE-59 (đã duyệt), đổi tên báo cáo, rà soát BE, commit + push | Báo cáo | DONE |
+| 2026-11-28 | Chuyển DSE-59 sang Done (người dùng duyệt) | Báo cáo | DONE |
