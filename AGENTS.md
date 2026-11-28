@@ -38,6 +38,8 @@ Implemented: auth (register OTP, login, forgot/reset, optional login OTP), profi
 | `npm run e2e` | Live end-to-end check of the grading flow against the running stack (also creates demo data); user guide: `docs/user-guide.md` |
 | `npm run gen:module -- <name> [--remove]` | Scaffold (or delete) feature BE+FE+tests from `notes` (kebab-case for multi-word) |
 
+Project skills live in `.claude/skills/` (committed; `.claude/settings.local.json` stays ignored): `/brag` and `/brag-slim` make a short launch video of the app (from github.com/latent-spaces/brag, MIT; on Opus/Sonnet 5.5 `/brag` hands off to `/brag-slim`). They never read `.env` or secrets.
+
 Optional services: no SMTP → emails printed to BE console (dev) / 503 (prod); no Cloudinary → upload 503; no `GEMINI_API_KEY` → chat 503; no `SANDBOX_API_URL` → run 503. Tests never read `BE/.env` (vars in `BE/vitest.config.mts`).
 
 ## 4. Adding a Feature
