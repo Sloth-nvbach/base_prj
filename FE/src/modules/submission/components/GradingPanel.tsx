@@ -93,11 +93,11 @@ export const GradingPanel = ({ detail, isAdmin }: GradingPanelProps) => {
         disabled={locked}
       />
 
-      <form onSubmit={save} className="space-y-4 rounded-md border p-4" aria-label="Grading">
+      <form onSubmit={save} className="space-y-4 rounded-lg border bg-card p-4 sm:p-5" aria-label="Grading">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Grade</h2>
+          <h2 className="text-base font-semibold">Grade</h2>
           <p className="text-sm" aria-live="polite">
-            Total: <span className="text-lg font-semibold">{liveTotal}</span> / {assignment.maxScore}
+            Total: <span className="font-mono text-lg font-semibold tabular-nums text-primary">{liveTotal}</span> / {assignment.maxScore}
           </p>
         </div>
         {submission.totalScore !== undefined && (

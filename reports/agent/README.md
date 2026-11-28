@@ -25,3 +25,4 @@ Rules: see `AGENTS.md` §9 (Workflow).
 | DSE-35-38 | Teacher grading UI (DSE-35, 36, 37, 38, 25, 23 UI) | DONE (demo) |
 | DSE-53-55 | Student flow (DSE-54, 55; DSE-53 partial) | DONE (demo) |
 | DSE-44-47 | Live E2E, fixes, user guide (DSE-44, 45, 47) | DONE |
+| DSE-59 | Thiết kế lại giao diện FE (theme Night shift) | DONE |

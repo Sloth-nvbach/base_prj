@@ -48,7 +48,7 @@ export const AvatarUpload = ({ currentAvatarUrl, userInitials = '??', onUploadSu
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="group relative cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group relative cursor-pointer rounded-full"
       >
         <Avatar className="size-24 ring-2 ring-border transition group-hover:ring-primary">
           <AvatarImage src={currentAvatarUrl} alt="Profile avatar" />
@@ -56,16 +56,16 @@ export const AvatarUpload = ({ currentAvatarUrl, userInitials = '??', onUploadSu
         </Avatar>
 
         {/* Overlay */}
-        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition group-hover:opacity-100">
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-overlay opacity-0 transition group-hover:opacity-100">
           {uploading
-            ? <Loader2 className="size-6 animate-spin text-white" />
-            : <Camera className="size-6 text-white" />
+            ? <Loader2 className="size-6 animate-spin text-foreground" />
+            : <Camera className="size-6 text-foreground" />
           }
         </span>
 
         {uploading && (
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
-            <Loader2 className="size-6 animate-spin text-white" />
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-overlay">
+            <Loader2 className="size-6 animate-spin text-foreground" />
           </span>
         )}
       </button>

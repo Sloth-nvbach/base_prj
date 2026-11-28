@@ -108,7 +108,7 @@ export const RegisterPage = () => {
   return (
     <AuthLayout>
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader>
           <CardTitle>{step === 'register' ? 'Create account' : 'Confirm OTP'}</CardTitle>
           <CardDescription>
             {step === 'register'

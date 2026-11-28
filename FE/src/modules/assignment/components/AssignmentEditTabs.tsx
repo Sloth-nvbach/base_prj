@@ -13,7 +13,7 @@ interface AssignmentEditTabsProps {
 
 export const AssignmentEditTabs = ({ assignment, isTeacherOrAdmin }: AssignmentEditTabsProps) => (
   <Tabs defaultValue="details" className="w-full">
-    <TabsList className="grid w-full grid-cols-4">
+    <TabsList className="w-full">
       <TabsTrigger value="details">Details</TabsTrigger>
       <TabsTrigger value="test-cases">Test Cases</TabsTrigger>
       <TabsTrigger value="rubric">Rubric</TabsTrigger>

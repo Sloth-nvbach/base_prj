@@ -123,7 +123,7 @@ export const LoginPage = () => {
   return (
     <AuthLayout>
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader>
           <CardTitle>{step === 'login' ? 'Welcome back' : 'Verify OTP'}</CardTitle>
           <CardDescription>
             {step === 'login'

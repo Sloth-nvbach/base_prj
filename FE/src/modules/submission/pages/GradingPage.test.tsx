@@ -67,7 +67,9 @@ describe('GradingPage', () => {
   it('shows the problem, numbered code and per-test results', async () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Sum two numbers' })).toBeInTheDocument();
-    expect(screen.getByText(/Lan · submitted/)).toBeInTheDocument();
+    expect(screen.getByText('Lan')).toBeInTheDocument();
+    expect(screen.getByText(/^submitted /)).toBeInTheDocument();
+    expect(screen.getByText('python')).toBeInTheDocument();
     expect(within(screen.getByLabelText('Submitted code')).getByText('print(a + b)')).toBeInTheDocument();
     expect(screen.getByText('1/2 passed')).toBeInTheDocument();
     expect(screen.getByText(/Failed/)).toBeInTheDocument();

@@ -33,7 +33,7 @@ const columns: DataTableColumn<Submission>[] = [
     header: <span className="sr-only">Actions</span>,
     className: 'text-right',
     cell: (s) => (
-      <Button asChild size="sm" variant={s.status === 'graded' ? 'outline' : 'default'}>
+      <Button asChild size="sm" variant={s.status === 'graded' ? 'ghost' : 'outline'}>
         <Link to={`/submissions/${s._id}/grade`}>{s.status === 'graded' ? 'View' : 'Grade'}</Link>
       </Button>
     ),

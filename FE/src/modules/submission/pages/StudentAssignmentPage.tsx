@@ -79,7 +79,7 @@ export const StudentAssignmentPage = () => {
     <div className="space-y-6">
       <PageHeader
         title={a.title}
-        description={`Max score ${a.maxScore}${a.dueDate ? ` · due ${new Date(a.dueDate).toLocaleString()}` : ''}`}
+        description={`Max score ${a.maxScore}${a.dueDate ? `, due ${new Date(a.dueDate).toLocaleString()}` : ''}`}
         actions={
           <Button asChild variant="outline">
             <Link to="/my-assignments">
@@ -90,19 +90,19 @@ export const StudentAssignmentPage = () => {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section aria-label="Problem" className="space-y-2 rounded-md border p-4">
-          <h2 className="font-semibold">Problem</h2>
+        <section aria-label="Problem" className="space-y-2 rounded-lg border bg-card p-4 sm:p-5">
+          <h2 className="text-base font-semibold">Problem</h2>
           {a.description && <p className="text-sm">{a.description}</p>}
           <p className="whitespace-pre-wrap text-sm text-muted-foreground">{a.instructions || 'No instructions.'}</p>
         </section>
 
-        <section aria-label="Your solution" className="rounded-md border p-4">
+        <section aria-label="Your solution" className="rounded-lg border bg-card p-4 sm:p-5">
           {access.data && !access.data.canSubmit ? (
             <p className="text-sm text-muted-foreground">Submissions are closed: {access.data.reason}</p>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               <FormField id="submission-language" label="Language" error={errors.language?.message}>
-                <select id="submission-language" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm" {...register('language')}>
+                <select id="submission-language" className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm transition-colors hover:border-muted-foreground" {...register('language')}>
                   {SUBMISSION_LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
                       {lang}
@@ -125,7 +125,7 @@ export const StudentAssignmentPage = () => {
       </div>
 
       <section aria-label="My submissions" className="space-y-2">
-        <h2 className="font-semibold">My submissions</h2>
+        <h2 className="text-base font-semibold">My submissions</h2>
         {history.isError ? (
           <ErrorState error={history.error} onRetry={() => void history.refetch()} />
         ) : (

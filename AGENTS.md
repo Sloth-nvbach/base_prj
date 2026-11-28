@@ -79,7 +79,7 @@ Layers, strictly top-down: `routes` → `middlewares` (`authGuard` → `requireR
 - **Forms:** RHF + Zod (`useForm<z.input, unknown, z.output>`) + `FormField`; mirror BE validation; strip empty optional strings to `undefined`; disable submit on `isPending`; `useWatch` not `watch`.
 - **Page states:** `LoadingState` / `ErrorState` (with retry) / `EmptyState`; `PageHeader`, `Pagination`, `ConfirmDialog` before delete, `useDebounce` for search.
 - **Tables:** `DataTable` (column config, `sort`/`onSortChange`, `selectedIds`), `TableToolbar` + `SearchInput` + `FilterSelect`, `useListParams` keeps state in URL. Reference: `AdminUsersPage.tsx`.
-- **UI:** shadcn/ui in `shared/components/ui/`, `cn()`, theme tokens only (no raw colors), `toast` from `sonner`.
+- **UI:** shadcn/ui in `shared/components/ui/`, `cn()`, theme tokens only (no raw colors; status via `Badge` `success`/`warning`/`destructive`), `toast` from `sonner`. Look and feel (palette, fonts, radius, motion, focus) → `FE/docs/architecture.md` §11; motion must respect `prefers-reduced-motion`, never remove the global focus outline.
 - **Tests:** `*.test.tsx` next to code; `vi.mock` the feature api; `renderWithProviders(<Page />, { route, otherRoutes })`; assert what the user sees. Model: `NotesListPage.test.tsx`.
 
 ## 7. Admin Area & Chat

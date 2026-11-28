@@ -96,7 +96,7 @@ export const DataTable = <T,>({
       const id = getRowId(row);
       const checked = selectedIds?.includes(id) ?? false;
       return (
-        <tr key={id} className={cn('border-t transition-colors hover:bg-muted/50', checked && 'bg-primary/10')}>
+        <tr key={id} className={cn('border-t transition-colors hover:bg-muted/60', checked && 'bg-accent/60 hover:bg-accent/70')}>
           {selectable && (
             <td className="w-10 px-4 py-3">
               <input
@@ -120,9 +120,9 @@ export const DataTable = <T,>({
   };
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-card">
+    <div className="overflow-x-auto rounded-lg border bg-card">
       <table className="w-full min-w-[640px] text-sm" aria-label={label} aria-busy={isLoading}>
-        <thead className="bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+        <thead className="bg-muted/50 text-left text-[0.8125rem] text-muted-foreground">
           <tr>
             {selectable && (
               <th className="w-10 px-4 py-3">
@@ -141,11 +141,11 @@ export const DataTable = <T,>({
               const ariaSort =
                 sort === column.sortKey ? 'ascending' : sort === `-${column.sortKey}` ? 'descending' : undefined;
               return (
-                <th key={column.id} scope="col" aria-sort={sortable ? (ariaSort ?? 'none') : undefined} className={cn('px-4 py-3 font-medium', column.className)}>
+                <th key={column.id} scope="col" aria-sort={sortable ? (ariaSort ?? 'none') : undefined} className={cn('whitespace-nowrap px-4 py-2.5 font-medium', column.className)}>
                   {sortable ? (
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 uppercase hover:text-foreground"
+                      className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 font-medium transition-colors hover:text-foreground"
                       onClick={() => onSortChange!(nextSort(sort, column.sortKey!))}
                     >
                       {column.header}

@@ -1,15 +1,17 @@
 import { Toaster as SonnerToaster } from 'sonner';
 
+// Colours come from the theme tokens, so toasts follow light/dark without a re-render.
 function Toaster() {
   return (
     <SonnerToaster
-      theme="dark"
-      position="bottom-right"
+      position="bottom-left"
       toastOptions={{
         style: {
-          background: 'hsl(224 40% 14%)',
-          color: 'hsl(210 40% 98%)',
-          border: '1px solid hsl(223 21% 26%)',
+          background: 'var(--popover)',
+          color: 'var(--popover-foreground)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          fontFamily: 'var(--font-sans)',
         },
       }}
     />

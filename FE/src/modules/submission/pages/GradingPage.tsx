@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useCurrentUser } from '@/modules/auth/hooks/use-current-user';
 import { ErrorState } from '@/shared/components/error-state';
 import { LoadingState } from '@/shared/components/loading-state';
+import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { CodeViewer } from '../components/CodeViewer';
 import { GradingPanel } from '../components/GradingPanel';
@@ -31,16 +32,18 @@ export const GradingPage = () => {
 
   return (
     <div className="space-y-4">
-      <header className="flex flex-wrap items-center gap-3">
+      <header className="flex flex-wrap items-center gap-3 border-b pb-4">
         <Button asChild variant="ghost" size="sm">
           <Link to="/submissions">
             <ArrowLeft className="mr-1 size-4" /> Back
           </Link>
         </Button>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-semibold">{assignment.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {personName(student)} · submitted {new Date(submission.submittedAt).toLocaleString()} · {submission.language}
+        <div className="min-w-0 flex-1 basis-full sm:basis-0">
+          <h1 className="truncate text-xl font-semibold sm:text-2xl">{assignment.title}</h1>
+          <p className="flex flex-wrap gap-x-3 text-sm text-muted-foreground">
+            <span className="text-foreground">{personName(student)}</span>
+            <span>submitted {new Date(submission.submittedAt).toLocaleString()}</span>
+            <Badge variant="outline">{submission.language}</Badge>
           </p>
         </div>
         <StatusBadge status={submission.status} />
@@ -48,8 +51,8 @@ export const GradingPage = () => {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section aria-label="Problem and code" className="min-w-0 space-y-4">
-          <div className="rounded-md border p-4">
-            <h2 className="mb-2 font-semibold">Problem</h2>
+          <div className="rounded-lg border bg-card p-4 sm:p-5">
+            <h2 className="mb-2 text-base font-semibold">Problem</h2>
             {assignment.description && <p className="mb-2 text-sm">{assignment.description}</p>}
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{assignment.instructions || 'No instructions.'}</p>
           </div>
@@ -57,8 +60,8 @@ export const GradingPage = () => {
         </section>
 
         <section aria-label="Results and grading" className="min-w-0 space-y-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-auto">
-          <div className="rounded-md border p-4">
-            <h2 className="mb-2 font-semibold">Test results</h2>
+          <div className="rounded-lg border bg-card p-4 sm:p-5">
+            <h2 className="mb-2 text-base font-semibold">Test results</h2>
             <TestResultsTable testCases={testCases} results={submission.testResults} runStatus={submission.runStatus} runMessage={submission.runMessage} />
           </div>
           <GradingPanel key={submission._id} detail={detail.data} isAdmin={user?.role === 'admin'} />

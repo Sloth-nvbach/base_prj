@@ -11,7 +11,11 @@ import { Pagination } from '@/shared/components/pagination';
 import { useListParams } from '@/shared/hooks/use-list-params';
 import { useAssignments, useCreateAssignment, useDeleteAssignment } from '../hooks/use-assignments';
 import type { Assignment, AssignmentListParams } from '../types/assignment.types';
-import { cn } from '@/shared/lib/utils';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { FormField } from '@/shared/components/form-field';
+import { Input } from '@/shared/components/ui/input';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { AssignmentStatusBadge } from '../components/AssignmentStatusBadge';
 
 const PAGE_SIZE = 10;
 const STATUS_OPTIONS = [
@@ -47,32 +51,24 @@ export const AssignmentsListPage = () => {
       header: 'Title',
       cell: (a: Assignment) => (
         <div>
-          <Link to={`/assignments/${a._id}`} className="font-medium hover:underline">{a.title}</Link>
+          <Link to={`/assignments/${a._id}`} className="font-medium hover:text-primary hover:underline">{a.title}</Link>
           <p className="text-sm text-muted-foreground truncate max-w-xs">{a.description}</p>
         </div>
       ),
+      className: 'min-w-48',
     },
     {
       id: 'status',
       header: 'Status',
       cell: (a: Assignment) => (
-        <span
-          className={cn(
-            'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-            a.status === 'draft' && 'bg-muted text-muted-foreground',
-            a.status === 'published' && 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-            a.status === 'closed' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-          )}
-        >
-          {a.status}
-        </span>
+        <AssignmentStatusBadge status={a.status} />
       ),
       className: 'w-32',
     },
     {
       id: 'maxScore',
       header: 'Max Score',
-      cell: (a: Assignment) => a.maxScore,
+      cell: (a: Assignment) => <span className="font-mono tabular-nums">{a.maxScore}</span>,
       className: 'w-24 text-center',
     },
     {
@@ -118,7 +114,7 @@ export const AssignmentsListPage = () => {
         description="Manage programming assignments"
         actions={
           <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="size-4 mr-1" />
+            <Plus className="size-4" />
             Create Assignment
           </Button>
         }
@@ -128,7 +124,7 @@ export const AssignmentsListPage = () => {
         actions={
           selectedIds.length > 0 && (
             <Button variant="destructive" onClick={() => setPendingDelete(selectedIds)}>
-              <Trash2 className="size-4 mr-1" />
+              <Trash2 className="size-4" />
               {selectedIds.length === 1 ? 'Delete' : `Delete (${selectedIds.length})`}
             </Button>
           )
@@ -170,7 +166,7 @@ export const AssignmentsListPage = () => {
                 description={isFiltered ? 'Try another search or filter.' : 'Create your first assignment to get started.'}
                 action={
                   <Button onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="size-4 mr-1" />
+                    <Plus className="size-4" />
                     Create Assignment
                   </Button>
                 }
@@ -193,55 +189,49 @@ export const AssignmentsListPage = () => {
         </>
       )}
 
-      {/* Create Dialog */}
-      {showCreateDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="bg-card rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">Create Assignment</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Enter assignment title"
-                  autoFocus
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreate} disabled={creating || !newTitle.trim()}>
-                  {creating ? 'Creating...' : 'Create'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirm Delete */}
-      {pendingDelete.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="bg-card rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-2">
-              {pendingDelete.length === 1 ? 'Delete this assignment?' : `Delete ${pendingDelete.length} assignments?`}
-            </h3>
-            <p className="text-muted-foreground mb-4">This cannot be undone.</p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setPendingDelete([])}>
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle>Create assignment</DialogTitle>
+          </DialogHeader>
+          <form
+            className="space-y-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleCreate();
+            }}
+          >
+            <FormField id="new-assignment-title" label="Title">
+              <Input
+                id="new-assignment-title"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="e.g. Recursion: Fibonacci"
+                autoFocus
+              />
+            </FormField>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={confirmDelete} disabled={deleteAssignment.isPending}>
-                {deleteAssignment.isPending ? 'Deleting...' : 'Delete'}
+              <Button type="submit" disabled={creating || !newTitle.trim()}>
+                {creating ? 'Creating…' : 'Create'}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={pendingDelete.length > 0}
+        onOpenChange={(open) => !open && setPendingDelete([])}
+        title={pendingDelete.length === 1 ? 'Delete this assignment?' : `Delete ${pendingDelete.length} assignments?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        pending={deleteAssignment.isPending}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

@@ -12,13 +12,11 @@ interface EmptyStateProps {
 
 /** Shown when a list has no items. */
 export const EmptyState = ({ title, description, icon: Icon = Inbox, action }: EmptyStateProps) => (
-  <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-10 text-center">
-    <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-      <Icon className="size-6" />
-    </div>
-    <div>
-      <p className="font-medium">{title}</p>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
+  <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-input px-6 py-12 text-center">
+    <Icon className="size-7 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+    <div className="space-y-1">
+      <p className="font-mono font-medium">{title}</p>
+      {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
     </div>
     {action}
   </div>

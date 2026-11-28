@@ -1,11 +1,13 @@
-import type { ComponentType } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LogOut, ShieldCheck } from 'lucide-react';
+import { useEffect, type ComponentType } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import type { NavItem } from '@/app/module.types';
 import { ThemeToggle } from '@/shared/components/ui/theme-toggle';
 import { useCurrentUser, useLogout } from '@/modules/auth/hooks/use-current-user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
+import { Brand } from '@/shared/components/brand';
+import { FetchIndicator } from '@/shared/components/fetch-indicator';
 import { cn } from '@/shared/lib/utils';
 
 interface AppLayoutProps {
@@ -14,6 +16,14 @@ interface AppLayoutProps {
   widgets?: ComponentType[];
 }
 
+/** Editor-style tab: amber underline marks the open section. */
+const navTabClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'relative inline-flex h-full shrink-0 items-center gap-1.5 px-3 font-mono text-[0.8125rem] transition-colors focus-visible:outline-offset-[-2px]',
+    'after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:origin-left after:bg-primary after:transition-transform after:duration-200',
+    isActive ? 'text-foreground after:scale-x-100' : 'text-muted-foreground after:scale-x-0 hover:text-foreground'
+  );
+
 export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProps) => {
   // An expired or rejected token answers 401, which the http interceptor turns
   // into a redirect to /logout. Other failures (server down) keep the user signed in.
@@ -21,57 +31,63 @@ export const AppLayout = ({ navItems: allNavItems, widgets = [] }: AppLayoutProp
   const location = useLocation();
   const handleLogout = useLogout();
 
+  // On phones the nav scrolls sideways: keep the current section in view.
+  useEffect(() => {
+    document.querySelector('nav[aria-label="Main"] [aria-current="page"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [location.pathname, user?.role]);
+
   const navItems = allNavItems.filter((item) => !item.roles || (user && item.roles.includes(user.role)));
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? '??';
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-card">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <ShieldCheck className="size-4" />
-            </div>
-            <span className="hidden sm:inline">Smart EdTech</span>
+      <a
+        href="#main"
+        className="sr-only z-[60] rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
+      >
+        Skip to content
+      </a>
+
+      <header className="sticky top-0 z-40 border-b bg-sidebar">
+        <div className="relative mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 px-4 sm:h-12 sm:flex-nowrap sm:px-6">
+          <Link to="/" className="flex h-12 items-center rounded-sm" aria-label="Smart EdTech home">
+            <Brand />
           </Link>
 
-          {/* Nav links */}
-          <nav className="flex items-center gap-1">
+          {/* One nav for all widths: a scrollable second row on phones, inline tabs from sm up. */}
+          <nav
+            aria-label="Main"
+            className="order-last -mx-4 flex h-10 w-[calc(100%+2rem)] overflow-x-auto border-t px-1 [scrollbar-width:none] sm:order-none sm:mx-0 sm:h-12 sm:w-auto sm:border-t-0 sm:px-0"
+          >
             {navItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
-                  location.pathname === item.to
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
-              >
-                <item.icon className="size-4" />
-                <span className="hidden sm:inline">{item.label}</span>
-              </Link>
+              <NavLink key={item.to} to={item.to} end={item.to === '/'} className={navTabClass}>
+                <item.icon className="size-4" aria-hidden="true" />
+                {item.label}
+              </NavLink>
             ))}
           </nav>
 
-          {/* User + logout */}
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex h-12 items-center gap-1">
             <ThemeToggle />
-            <Avatar className="size-8">
-              <AvatarImage src={user?.avatarUrl} alt={user?.email} />
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-            </Avatar>
+            <Link to="/profile" className="rounded-full" aria-label="Your profile">
+              <Avatar className="size-7">
+                <AvatarImage src={user?.avatarUrl} alt="" />
+                <AvatarFallback className="font-mono text-[0.6875rem]">{initials}</AvatarFallback>
+              </Avatar>
+            </Link>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-1.5 text-muted-foreground hover:text-foreground">
               <LogOut className="size-4" />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="sr-only md:not-sr-only">Logout</span>
             </Button>
           </div>
+
+          <FetchIndicator />
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      {/* Keyed by path so each page fades in once when you navigate to it. */}
+      <main id="main" key={location.pathname} className="mx-auto max-w-6xl animate-fade px-4 pt-6 pb-24 sm:px-6 sm:pt-8">
         <Outlet />
       </main>
 

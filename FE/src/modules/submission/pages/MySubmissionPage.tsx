@@ -39,7 +39,7 @@ export const MySubmissionPage = () => {
     <div className="space-y-6">
       <PageHeader
         title={assignment.title}
-        description={`Submitted ${new Date(submission.submittedAt).toLocaleString()} · ${submission.language}`}
+        description={`Submitted ${new Date(submission.submittedAt).toLocaleString()} in ${submission.language}`}
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={submission.status} />
@@ -52,10 +52,10 @@ export const MySubmissionPage = () => {
         }
       />
 
-      <div className="rounded-md border p-4" role="status">
+      <div className="rounded-lg border bg-card p-4 sm:p-5" role="status">
         {graded ? (
           <p className="text-lg">
-            Final score: <span className="font-semibold">{submission.score}</span> / {assignment.maxScore}
+            Final score: <span className="font-mono font-semibold tabular-nums text-primary">{submission.score}</span> / {assignment.maxScore}
           </p>
         ) : running ? (
           <p>Running your code against the test cases…</p>
@@ -65,14 +65,14 @@ export const MySubmissionPage = () => {
       </div>
 
       <Tabs defaultValue="results">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="w-full">
           <TabsTrigger value="code">Code</TabsTrigger>
           <TabsTrigger value="results">Test results</TabsTrigger>
           <TabsTrigger value="rubric">Rubric</TabsTrigger>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="code" className="space-y-2 pt-4">
+        <TabsContent value="code" className="space-y-2">
           <div className="flex justify-end">
             <Button variant="outline" size="sm" onClick={() => downloadCode(submission.code, submission.language)}>
               <Download className="mr-1 size-4" /> Download code
@@ -81,11 +81,11 @@ export const MySubmissionPage = () => {
           <CodeViewer code={submission.code} />
         </TabsContent>
 
-        <TabsContent value="results" className="pt-4">
+        <TabsContent value="results">
           <TestResultsTable testCases={testCases} results={submission.testResults} runStatus={submission.runStatus} runMessage={submission.runMessage} />
         </TabsContent>
 
-        <TabsContent value="rubric" className="pt-4">
+        <TabsContent value="rubric">
           {graded && submission.criterionScores?.length ? (
             <table className="w-full text-sm">
               <thead>
@@ -112,9 +112,9 @@ export const MySubmissionPage = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="feedback" className="pt-4">
+        <TabsContent value="feedback">
           {graded && submission.feedback ? (
-            <p className="whitespace-pre-wrap rounded-md border p-4 text-sm">{submission.feedback}</p>
+            <p className="whitespace-pre-wrap rounded-lg border bg-card p-4 sm:p-5 text-sm">{submission.feedback}</p>
           ) : (
             <p className="text-sm text-muted-foreground">{graded ? 'No feedback.' : 'Feedback appears after grading.'}</p>
           )}

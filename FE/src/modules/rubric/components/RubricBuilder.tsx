@@ -361,7 +361,7 @@ export const RubricBuilder = ({ assignmentId, isTeacherOrAdmin }: RubricBuilderP
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span>Total Weight</span>
-          <span className={cn('font-medium', isWeightValid ? 'text-green-600' : 'text-destructive')}>
+          <span className={cn('font-medium', isWeightValid ? 'text-success' : 'text-destructive')}>
             {totalWeight}% / 100%
           </span>
         </div>

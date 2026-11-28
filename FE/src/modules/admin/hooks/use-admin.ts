@@ -11,7 +11,7 @@ export const adminKeys = {
   users: (params: AdminUserListParams) => [...adminKeys.all, 'users', params] as const,
 };
 
-export const useAdminStats = () => useQuery({ queryKey: adminKeys.stats(), queryFn: adminApi.stats });
+export const useAdminStats = (enabled = true) => useQuery({ queryKey: adminKeys.stats(), queryFn: adminApi.stats, enabled });
 
 /** Keeps the previous page on screen while the next one loads. */
 export const useAdminUsers = (params: AdminUserListParams) =>

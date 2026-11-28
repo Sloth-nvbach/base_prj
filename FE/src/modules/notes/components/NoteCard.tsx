@@ -13,7 +13,7 @@ interface NoteCardProps {
 }
 
 export const NoteCard = ({ note, onEdit, onDelete, onTagClick }: NoteCardProps) => (
-  <Card className="flex h-full flex-col">
+  <Card className="flex h-full flex-col transition-colors hover:border-input">
     <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
       <CardTitle className="line-clamp-2 text-base">{note.title}</CardTitle>
       <div className="flex shrink-0">
@@ -29,11 +29,11 @@ export const NoteCard = ({ note, onEdit, onDelete, onTagClick }: NoteCardProps) 
       {note.content && <p className="line-clamp-4 whitespace-pre-line text-sm text-muted-foreground">{note.content}</p>}
       <div className="mt-auto flex flex-wrap items-center gap-1.5">
         {note.tags.map((tag) => (
-          <button key={tag} type="button" onClick={() => onTagClick(tag)}>
+          <button key={tag} type="button" className="rounded-sm" onClick={() => onTagClick(tag)}>
             <Badge variant="secondary">#{tag}</Badge>
           </button>
         ))}
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
           {new Date(note.updatedAt).toLocaleDateString()}
         </span>
       </div>

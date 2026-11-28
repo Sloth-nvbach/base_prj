@@ -12,13 +12,13 @@ export const ChatMessageBubble = ({ message }: ChatMessageBubbleProps) => {
 
   return (
     <div className={cn('flex items-start gap-2', fromUser && 'flex-row-reverse')}>
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Icon className="size-4" />
+      <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground" aria-hidden="true">
+        <Icon className="size-3.5" />
       </div>
       <div
         className={cn(
-          'max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2 text-sm',
-          fromUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
+          'max-w-[85%] animate-enter whitespace-pre-wrap break-words rounded-lg px-3.5 py-2 text-sm leading-relaxed',
+          fromUser ? 'bg-accent text-accent-foreground' : 'border bg-card text-foreground',
         )}
       >
         {message.text}

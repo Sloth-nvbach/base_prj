@@ -60,7 +60,7 @@ export const ForgotPasswordPage = () => {
   return (
     <AuthLayout>
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader>
           <CardTitle>{step === 'request' ? 'Forgot password' : 'Reset password'}</CardTitle>
           <CardDescription>
             {step === 'request'

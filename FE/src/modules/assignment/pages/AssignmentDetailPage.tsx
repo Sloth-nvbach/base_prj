@@ -19,7 +19,7 @@ export const AssignmentDetailPage = () => {
     <div className="space-y-6">
       <PageHeader
         title={assignment.data.title}
-        description={`Status: ${assignment.data.status} · Max score ${assignment.data.maxScore}`}
+        description={`Status: ${assignment.data.status}, max score ${assignment.data.maxScore}`}
         actions={
           <Button asChild variant="outline">
             <Link to="/assignments">

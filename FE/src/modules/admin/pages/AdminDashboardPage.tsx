@@ -21,7 +21,7 @@ export const AdminDashboardPage = () => {
       {stats.isError ? (
         <ErrorState error={stats.error} onRetry={() => void stats.refetch()} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard
             label="Users"
             icon={Users}
@@ -37,8 +37,8 @@ export const AdminDashboardPage = () => {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <UserPlus className="size-5" />
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <UserPlus className="size-4 text-primary" aria-hidden="true" />
             Newest users
           </h2>
           <Button variant="outline" size="sm" asChild>

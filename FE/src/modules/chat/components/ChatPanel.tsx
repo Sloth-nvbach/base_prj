@@ -23,16 +23,14 @@ export const ChatPanel = ({ chat }: ChatPanelProps) => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4" aria-live="polite">
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Bot className="size-5" />
-            </div>
-            <p className="text-sm text-muted-foreground">{chatConfig.welcomeMessage}</p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <Bot className="size-6 text-primary" strokeWidth={1.5} aria-hidden="true" />
+            <p className="max-w-xs text-sm text-muted-foreground">{chatConfig.welcomeMessage}</p>
             <div className="flex flex-col gap-2">
               {chatConfig.suggestions.map((suggestion) => (
-                <Button key={suggestion} variant="outline" size="sm" className="h-auto whitespace-normal py-1.5" onClick={() => send(suggestion)}>
+                <Button key={suggestion} variant="outline" size="sm" className="h-auto justify-start whitespace-normal py-1.5 text-left" onClick={() => send(suggestion)}>
                   {suggestion}
                 </Button>
               ))}
@@ -43,8 +41,8 @@ export const ChatPanel = ({ chat }: ChatPanelProps) => {
         )}
 
         {isThinking && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
+          <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             {chatConfig.botName} is thinking…
           </div>
         )}

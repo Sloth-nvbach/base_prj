@@ -22,7 +22,7 @@ const dueTone = (dueDate?: string) => {
   const hours = (new Date(dueDate).getTime() - Date.now()) / 36e5;
   if (hours < 0) return 'text-muted-foreground line-through';
   if (hours < 24) return 'text-destructive font-medium';
-  if (hours < 72) return 'text-orange-600 dark:text-orange-400 font-medium';
+  if (hours < 72) return 'text-warning font-medium';
   return '';
 };
 
@@ -41,7 +41,7 @@ export const StudentAssignmentsPage = () => {
       header: 'Exercise',
       sortKey: 'title',
       cell: (a) => (
-        <Link to={`/my-assignments/${a._id}`} className="font-medium hover:underline">
+        <Link to={`/my-assignments/${a._id}`} className="font-medium hover:text-primary hover:underline">
           {a.title}
         </Link>
       ),
@@ -61,7 +61,7 @@ export const StudentAssignmentsPage = () => {
       header: <span className="sr-only">Actions</span>,
       className: 'text-right',
       cell: (a) => (
-        <Button asChild size="sm" variant={a.status === 'closed' ? 'outline' : 'default'}>
+        <Button asChild size="sm" variant={a.status === 'closed' ? 'ghost' : 'outline'}>
           <Link to={`/my-assignments/${a._id}`}>{a.status === 'closed' ? 'View' : 'Open'}</Link>
         </Button>
       ),

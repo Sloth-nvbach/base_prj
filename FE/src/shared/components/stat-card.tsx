@@ -1,5 +1,4 @@
 import type { LucideIcon } from 'lucide-react';
-import { Card } from '@/shared/components/ui/card';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 
 interface StatCardProps {
@@ -11,16 +10,14 @@ interface StatCardProps {
   isLoading?: boolean;
 }
 
-/** One number on a dashboard. */
+/** One number on a dashboard. Sits in a grid with a shared border, like segments of a status line. */
 export const StatCard = ({ label, value, icon: Icon, hint, isLoading }: StatCardProps) => (
-  <Card className="flex items-start justify-between gap-4 p-5">
-    <div className="space-y-1">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-3xl font-bold">{value ?? '—'}</p>}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
-    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
-      <Icon className="size-5" />
-    </div>
-  </Card>
+  <div className="flex flex-col gap-1 rounded-lg border bg-card px-4 py-3.5">
+    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+      <Icon className="size-3.5" aria-hidden="true" />
+      {label}
+    </p>
+    {isLoading ? <Skeleton className="h-8 w-14" /> : <p className="font-mono text-[1.75rem] font-semibold leading-tight tabular-nums">{value ?? '—'}</p>}
+    {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+  </div>
 );

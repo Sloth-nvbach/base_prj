@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Users, ClipboardList, FileText, Clock, ShieldCheck, BadgeCheck, NotebookText } from 'lucide-react';
+import { ChevronRight, Users, ClipboardList, FileText, Clock, ShieldCheck, BadgeCheck, NotebookText } from 'lucide-react';
 import { useCurrentUser } from '@/modules/auth/hooks/use-current-user';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { DataTable } from '@/shared/components/data-table';
 import { useAssignments } from '@/modules/assignment/hooks/use-assignments';
 import type { Assignment } from '@/modules/assignment/types/assignment.types';
 import { StatCard } from '@/shared/components/stat-card';
+import { PageHeader } from '@/shared/components/page-header';
+import { AssignmentStatusBadge } from '@/modules/assignment/components/AssignmentStatusBadge';
 import { useMySubmissions, useReviewSubmissions } from '@/modules/submission/hooks/use-submissions';
+import { useAdminStats } from '@/modules/admin/hooks/use-admin';
 
 const teacherQuickActions = [
   { title: 'Create Assignment', description: 'Create a new programming assignment', icon: FileText, to: '/assignments', action: true },
@@ -34,6 +36,7 @@ export const HomePage = () => {
   const isStudent = role === 'student';
   const mySubmissions = useMySubmissions({ limit: 1 }, isStudent);
   const pendingReview = useReviewSubmissions({ limit: 1, status: 'submitted' }, role === 'teacher');
+  const adminStats = useAdminStats(role === 'admin');
 
   const getQuickActions = () => {
     switch (role) {
@@ -64,10 +67,10 @@ export const HomePage = () => {
       case 'admin':
       default:
         return [
-          { label: 'Users', icon: Users, value: 0, hint: 'Total users', isLoading: true },
-          { label: 'Admins', icon: ShieldCheck, value: 0, isLoading: true },
-          { label: 'Verified', icon: BadgeCheck, value: 0, hint: '96% verified', isLoading: true },
-          { label: 'Assignments', icon: NotebookText, value: 0, isLoading: true },
+          { label: 'Users', icon: Users, value: adminStats.data?.users, hint: adminStats.data && `${adminStats.data.newUsersThisWeek} new this week`, isLoading: adminStats.isPending },
+          { label: 'Admins', icon: ShieldCheck, value: adminStats.data?.admins, isLoading: adminStats.isPending },
+          { label: 'Verified emails', icon: BadgeCheck, value: adminStats.data?.verified, isLoading: adminStats.isPending },
+          { label: 'Assignments', icon: NotebookText, value: assignments.data?.total, isLoading: assignments.isPending },
         ];
     }
   };
@@ -86,25 +89,13 @@ export const HomePage = () => {
     {
       id: 'status',
       header: 'Status',
-      cell: (a: Assignment) => {
-        const statusConfig = {
-          draft: { label: 'Draft', className: 'bg-muted text-muted-foreground' },
-          published: { label: 'Published', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-          closed: { label: 'Closed', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-        };
-        const config = statusConfig[a.status as keyof typeof statusConfig] || statusConfig.draft;
-        return (
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.className}`}>
-            {config.label}
-          </span>
-        );
-      },
+      cell: (a: Assignment) => <AssignmentStatusBadge status={a.status} />,
       className: 'w-32',
     },
     {
       id: 'maxScore',
       header: 'Max Score',
-      cell: (a: Assignment) => a.maxScore,
+      cell: (a: Assignment) => <span className="font-mono tabular-nums">{a.maxScore}</span>,
       className: 'w-24 text-center',
     },
     {
@@ -132,63 +123,47 @@ export const HomePage = () => {
 
   return (
     <div className="space-y-8">
-      {/* Hero section */}
-      <section className="rounded-2xl border bg-card p-8">
-        <p className="text-sm font-medium text-primary">Dashboard</p>
-        <h1 className="mt-1 text-3xl font-bold">
-          Welcome back, <span className="text-primary">{displayName}</span>
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          {role === 'teacher' ? 'Manage your assignments and review submissions.' :
-           role === 'student' ? 'View your assigned exercises and track progress.' :
-           'System overview and administration.'}
-        </p>
+      <PageHeader
+        title={`Welcome back, ${displayName}`}
+        description={
+          role === 'teacher' ? 'Manage your assignments and review submissions.' :
+          role === 'student' ? 'View your assigned exercises and track progress.' :
+          'System overview and administration.'
+        }
+      />
+
+      <section aria-label="Overview" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {statCards.map((stat) => (
+          <StatCard key={stat.label} label={stat.label} icon={stat.icon} value={stat.value} hint={stat.hint} isLoading={stat.isLoading} />
+        ))}
       </section>
 
-      {/* Stat Cards */}
-      <section>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat, index) => (
-            <StatCard
-              key={index}
-              label={stat.label}
-              icon={stat.icon}
-              value={stat.value}
-              hint={stat.hint}
-              isLoading={stat.isLoading}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Quick Actions</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold">Quick actions</h2>
+        <ul className="divide-y overflow-hidden rounded-lg border bg-card">
           {quickActions.map((action) => (
-            <Link key={action.title} to={action.to} className="group block">
-              <Card className="h-full transition-colors group-hover:border-primary/50 group-hover:bg-card/80">
-                <CardHeader className="pb-3">
-                  <div className="mb-2 inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <action.icon className="size-5" />
-                  </div>
-                  <CardTitle className="text-base">{action.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{action.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
+            <li key={action.title}>
+              <Link
+                to={action.to}
+                className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/60 focus-visible:outline-offset-[-2px]"
+              >
+                <action.icon className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-mono text-sm font-medium group-hover:text-primary">{action.title}</span>
+                  <span className="block text-sm text-muted-foreground">{action.description}</span>
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* Recent Assignments Table */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <ClipboardList className="size-5" />
-            Recent Assignments
+          <h2 className="text-base font-semibold">
+            Recent assignments
           </h2>
           <Button variant="outline" size="sm" asChild>
             <Link to="/assignments">View all</Link>
@@ -201,8 +176,8 @@ export const HomePage = () => {
           getRowId={(a) => a._id}
           isLoading={assignments.isPending}
           emptyState={
-            <div className="py-8 text-center text-muted-foreground">
-              No assignments yet. {role === 'teacher' || role === 'admin' ? 'Create your first assignment!' : 'Check back when assignments are published.'}
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No assignments yet. {role === 'teacher' || role === 'admin' ? 'Create your first assignment.' : 'Check back when assignments are published.'}
             </div>
           }
         />

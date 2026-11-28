@@ -65,7 +65,7 @@ export const AssignmentDetailsForm = ({ assignment }: { assignment: Assignment }
           <Input id="assignment-max" type="number" {...register('maxScore')} />
         </FormField>
         <FormField id="assignment-status" label="Status" error={errors.status?.message}>
-          <select id="assignment-status" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm" {...register('status')}>
+          <select id="assignment-status" className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm transition-colors hover:border-muted-foreground" {...register('status')}>
             {ASSIGNMENT_STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s}

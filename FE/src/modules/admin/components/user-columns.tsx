@@ -48,7 +48,7 @@ export const userColumns = ({ currentUserId, onEdit, onDelete }: UserColumnOptio
       id: 'verified',
       header: 'Email',
       cell: (user) =>
-        user.isEmailVerified ? <Badge variant="outline">Verified</Badge> : <Badge variant="destructive">Unverified</Badge>,
+        user.isEmailVerified ? <Badge variant="success">Verified</Badge> : <Badge variant="warning">Unverified</Badge>,
     },
     {
       id: 'createdAt',

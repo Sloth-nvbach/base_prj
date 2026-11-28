@@ -159,7 +159,19 @@ Use `PageHeader` for the title row, `Pagination` under lists, `ConfirmDialog` be
 ### 10. UI, styling, notifications
 - shadcn/ui primitives in `shared/components/ui/` — reuse them; compose classes with `cn()`.
 - Tailwind theme tokens (`bg-background`, `text-muted-foreground`, `text-destructive`, ...) — no raw colors, so dark mode works.
-- `toast.success` / `toast.error` from `sonner`; `<Toaster />` is mounted once in `main.tsx`.
+- `toast.success` / `toast.error` from `sonner`; `<Toaster />` is mounted once in `main.tsx` (bottom-left, so it never covers the chat button).
+
+### 11. Look and feel ("night shift" theme)
+All values live in `src/index.css`; components only use the tokens.
+
+- **Palette.** Dark is the default (`.dark` on `<html>`): ink `#151B22`, pane `#1B232C`, rule `#2C3744`, text `#D5DCE3`, amber caret `#E8B45A`. Light: paper `#EEF1F4`, sheet `#FFFFFF`, text `#1C242D`, amber ink `#8A5800`. Every text pair is ≥ 4.5:1, input borders ≥ 3:1. Re-check contrast when you change a token.
+- **Status tokens.** `success` (passed, published, graded), `warning` (timeouts, due soon, flagged lines, unverified), `destructive` (failed, errors), `info`. Use `Badge` variants `success | warning | destructive | secondary | outline | default` instead of colouring spans by hand; the word must carry the meaning, never the colour alone.
+- **Type.** `font-sans` = Be Vietnam Pro (full Vietnamese support) for reading; `font-mono` = IBM Plex Mono for `h1`–`h3`, code, numbers (`tabular-nums`), nav and status chips. Labels stay sentence case — no ALL-CAPS headers.
+- **Shape.** Radius: controls 4px (`rounded-md`), panels 6px (`rounded-lg`), overlays 8px (`rounded-xl`). Panels are flat (`border bg-card`, no shadow); only overlays (dialog, menus, chat) get a shadow. Overlay backdrop: `bg-overlay`.
+- **Shell.** `AppLayout`: editor-style top bar (`Brand` + tabbed nav with an amber underline; on phones the nav becomes a scrollable second row), skip link, `FetchIndicator` (thin amber sweep while any query or mutation runs). `PageHeader` puts an amber block caret after the title.
+- **Motion.** Only these, all in `index.css`: `animate-enter` (dialogs, menus, chat popup, new chat messages), `animate-fade` (page change, overlays, tab panels), `animate-caret` (blinks 3×, then stays), `animate-scan` (fetch indicator). No looping decoration, no hover lifts on cards. `prefers-reduced-motion: reduce` turns all of it off globally — don't add motion that bypasses that rule.
+- **Focus.** One global `:focus-visible` outline (2px amber, offset 2px). Don't add `outline-none` / `focus:ring-*` to components; it hides the outline on amber buttons.
+- **Meta text.** Separate facts with layout (`flex gap-x-3`) or plain commas, not `·` strings.
 
 ## Testing
 
